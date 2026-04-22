@@ -16,10 +16,6 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <ShieldCheck className="h-4 w-4" />
-              Trusted PPE Supplier Since 2010
-            </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-background leading-tight text-balance">
               Industrial Safety Equipment You Can{" "}
               <span className="text-primary">Trust</span>
