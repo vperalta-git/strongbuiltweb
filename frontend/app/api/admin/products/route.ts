@@ -4,6 +4,7 @@ import { ADMIN_COOKIE_NAME, isValidAdminToken } from "@/lib/admin-session"
 import { addAdminProduct, deleteAdminProduct, getAdminProducts, updateAdminProduct } from "@/lib/product-store"
 
 export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
 
 async function isAuthenticated() {
   const cookieStore = await cookies()
