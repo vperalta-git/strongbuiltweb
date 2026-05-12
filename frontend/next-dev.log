@@ -1,0 +1,15 @@
+
+> my-project@0.1.0 dev
+> next dev --port 3000
+
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.254.147:3000
+✓ Ready in 654ms
+Creating turbopack project {
+  dir: 'C:\\Users\\Vionne\\Desktop\\tracmac\\frontend',
+  testMode: true
+}
+
+○ Compiling /products ...
+[?25h
