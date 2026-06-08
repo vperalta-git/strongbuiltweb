@@ -384,5 +384,75 @@
     "spec": "200 pairs per dispenser box; PU foam earplugs; SNR 37 dB",
     "imageUrl": "/products/delta-plus/hearing/conic2v200.png",
     "createdAt": "2026-05-25T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-dt117",
+    "name": "DT117",
+    "category": "Outdoor Wear",
+    "brand": "Delta Plus",
+    "description": "Waterproof hooded outerwear with a fixed hood, double-zip front, protective flap, and ribbed cuffs for weather-exposed work.",
+    "spec": "Fixed hood; double zipper, flap, and hook and loop fastening; waterproof zipper; ribbed cuff; total product weight: 63 g/m2",
+    "imageUrl": "/products/delta-plus/body/dt117.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-dt215",
+    "name": "DT215",
+    "category": "Outdoor Wear",
+    "brand": "Delta Plus",
+    "description": "Lightweight waterproof outerwear with a fixed hood, zipper front, and hook-and-loop storm flap for wet-condition use.",
+    "spec": "Fixed hood; zipper, flap, and hook and loop closure; waterproof zipper; total product weight: 50 g/m2",
+    "imageUrl": "/products/delta-plus/body/dt215.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-en400lv",
+    "name": "EN400LV",
+    "category": "Outdoor Wear",
+    "brand": "Delta Plus",
+    "description": "Weather-ready outerwear with back aeration, fixed hood, shirt collar, and multi-point adjustments for comfort and visibility on site.",
+    "spec": "Back aeration; fixed hood; shirt collar; zipper closure; snap-fastener cuffs; elastic inner wrist; bottom drawstring; snap-fastener trouser bottoms; 4 exterior pockets: 2 flap pockets and 2 hand pockets; colors: navy blue, neon orange, neon green",
+    "imageUrl": "/products/delta-plus/body/en400lv.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-en400",
+    "name": "EN400",
+    "category": "Outdoor Wear",
+    "brand": "Delta Plus",
+    "description": "Protective outerwear with back aeration, fixed hood, shirt collar, and practical storage for all-weather field work.",
+    "spec": "Back aeration; fixed hood; shirt collar; zipper closure; snap-fastener cuffs; bottom drawstring; snap-fastener trouser bottoms; 4 exterior pockets: 2 flap pockets and 2 hand pockets; colors: yellow, green, navy blue, blue",
+    "imageUrl": "/products/delta-plus/body/en400.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-elara-280",
+    "name": "ELARA 280",
+    "category": "Fall Protection",
+    "brand": "Delta Plus",
+    "description": "Scaffolding-ready fall arrester kit with a double-stranded rope lanyard, energy absorber, and back-front harness anchorage for ready-to-use height safety.",
+    "spec": "Fall arrester with energy absorber in double stranded rope (Y), 12 mm; length: 2 m; back-front harness anchorage point; 2 adjustment loops; 2 adjustable lateral plates (Ref. HAR12); color: orange; CE Regulations EU 2016/425; EN355:2002, EN361:2002, EN358:1999, EN362:2004, EN363:2008, EN364:1992, EN365:2004",
+    "imageUrl": "/products/delta-plus/fall/elara-280.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-elara-320",
+    "name": "ELARA 320",
+    "category": "Fall Protection",
+    "brand": "Delta Plus",
+    "description": "Positioning and scaffolding fall arrest kit with harness, safety belt, adjustable work-positioning lanyard, and double-stranded rope energy-absorbing lanyard.",
+    "spec": "2 fall arrester anchorage point harness; 2 adjustment loops; 2 adjustable side plates; with safety belt; adjustable work positioning lanyard via reducer; lanyard length: 1.1 to 2 m; stranded rope: 12 mm; fall arrester with energy absorber in double stranded rope; length: 2 m; 1 AM002 carabiner and 2 AM022 hooks; 2 connectors AM002; harness material: polyester straps; energy-absorbing lanyards: polyester strap and polyamide rope; lanyard: polyamide; carabiner and hook: steel",
+    "imageUrl": "/products/delta-plus/fall/elara-320.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
+  },
+  {
+    "id": "delta-plus-elara-190",
+    "name": "ELARA 190",
+    "category": "Fall Protection",
+    "brand": "Delta Plus",
+    "description": "Scaffolding-ready fall arrester kit with a double-stranded webbing lanyard, energy absorber, and back-front harness anchorage for work-at-height protection.",
+    "spec": "Fall arrester with energy absorber in double stranded webbing (Y), 12 mm; length: 2 m; back-front harness anchorage point; 2 adjustment loops; 2 adjustable lateral plates (Ref. HAR12); color: orange",
+    "imageUrl": "/products/delta-plus/fall/elara-190.png",
+    "createdAt": "2026-05-26T00:00:00.000Z"
   }
 ]

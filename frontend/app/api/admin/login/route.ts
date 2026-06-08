@@ -2,10 +2,21 @@ import { NextResponse } from "next/server"
 import { ADMIN_COOKIE_NAME, createAdminToken, getAdminCredentials } from "@/lib/admin-session"
 
 export async function POST(request: Request) {
-  const { username, password } = (await request.json()) as {
+  let credentialsPayload: {
     username?: string
     password?: string
   }
+
+  try {
+    credentialsPayload = (await request.json()) as {
+      username?: string
+      password?: string
+    }
+  } catch {
+    return NextResponse.json({ message: "Please enter a valid admin username and password." }, { status: 400 })
+  }
+
+  const { username, password } = credentialsPayload
   const credentials = getAdminCredentials()
 
   if (username !== credentials.username || password !== credentials.password) {

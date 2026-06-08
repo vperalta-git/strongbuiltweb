@@ -4,24 +4,24 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.985 0.004 65);
-  --foreground: oklch(0.18 0.012 55);
+  --background: oklch(0.982 0.006 75);
+  --foreground: oklch(0.18 0.015 62);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0 0);
   --primary: oklch(0.68 0.19 48);
   --primary-foreground: oklch(0.985 0.004 65);
-  --secondary: oklch(0.94 0.018 65);
+  --secondary: oklch(0.94 0.014 82);
   --secondary-foreground: oklch(0.2 0.018 55);
-  --muted: oklch(0.955 0.012 65);
+  --muted: oklch(0.948 0.011 78);
   --muted-foreground: oklch(0.44 0.018 55);
   --accent: oklch(0.74 0.17 55);
   --accent-foreground: oklch(0.17 0.012 55);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.88 0.012 65);
-  --input: oklch(0.88 0.012 65);
+  --border: oklch(0.875 0.011 76);
+  --input: oklch(0.875 0.011 76);
   --ring: oklch(0.68 0.19 48);
   --chart-1: oklch(0.68 0.19 48);
   --chart-2: oklch(0.36 0.04 210);
@@ -121,5 +121,289 @@
   }
   body {
     @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+@layer components {
+  .section-shell {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.18em] text-primary;
+  }
+
+  .section-title {
+    @apply mt-3 text-3xl font-bold leading-tight text-foreground text-balance sm:text-4xl;
+  }
+
+  .section-copy {
+    @apply mt-4 text-base leading-7 text-muted-foreground text-pretty sm:text-lg;
+  }
+
+  .surface-card {
+    @apply rounded-lg border border-border/80 bg-card shadow-sm shadow-black/5;
+  }
+
+  .dark-panel {
+    @apply bg-[#232d39] text-white;
+  }
+
+  .trusted-brands-section {
+    background: #faf7f2;
+    padding: 80px 0;
+    overflow: hidden;
+  }
+
+  .section-header {
+    max-width: 760px;
+    margin: 0 auto 28px;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .trusted-brands-eyebrow {
+    color: #f26700;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .trusted-brands-accent {
+    width: 64px;
+    height: 2px;
+    background: #f26700;
+    margin: 0 auto 20px;
+  }
+
+  .trusted-brands-description {
+    color: #24384a;
+    font-size: 16px;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .caution-tape-separator {
+    position: relative;
+    height: 34px;
+    margin: 0 auto 38px;
+    overflow: hidden;
+    border-block: 1px solid rgba(15, 36, 53, 0.18);
+    background:
+      linear-gradient(rgba(255, 193, 7, 0.92), rgba(255, 193, 7, 0.92)),
+      repeating-linear-gradient(
+        135deg,
+        rgba(6, 22, 37, 0.92) 0 12px,
+        transparent 12px 27px
+      );
+    box-shadow: 0 8px 20px rgba(15, 36, 53, 0.08);
+  }
+
+  .caution-tape-separator::before,
+  .caution-tape-separator::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    width: 120px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .caution-tape-separator::before {
+    left: 0;
+    background: linear-gradient(to right, #faf7f2, rgba(250, 247, 242, 0));
+  }
+
+  .caution-tape-separator::after {
+    right: 0;
+    background: linear-gradient(to left, #faf7f2, rgba(250, 247, 242, 0));
+  }
+
+  .caution-tape-track {
+    display: flex;
+    width: max-content;
+    min-width: 200%;
+    height: 100%;
+    align-items: center;
+    gap: 28px;
+    color: #061625;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.72;
+    animation: cautionTapeDrift 34s linear infinite;
+  }
+
+  .caution-tape-track span {
+    display: inline-flex;
+    align-items: center;
+    gap: 28px;
+    white-space: nowrap;
+  }
+
+  .caution-tape-track span::after {
+    content: "PPE REQUIRED";
+  }
+
+  .logo-marquee {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 8px 0;
+  }
+
+  .logo-marquee::before,
+  .logo-marquee::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 140px;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .logo-marquee::before {
+    left: 0;
+    background: linear-gradient(to right, #faf7f2, transparent);
+  }
+
+  .logo-marquee::after {
+    right: 0;
+    background: linear-gradient(to left, #faf7f2, transparent);
+  }
+
+  .logo-track {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 32px;
+    width: max-content;
+    animation: trustedBrandsMarquee 20s linear infinite;
+    will-change: transform;
+  }
+
+  .logo-marquee:hover .logo-track {
+    animation-play-state: paused;
+  }
+
+  .logo-card {
+    flex: 0 0 auto;
+    width: 190px;
+    height: 96px;
+    background: #ffffff;
+    border: 1px solid #d6dee8;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 36, 53, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 28px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .logo-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(242, 103, 0, 0.35);
+    box-shadow: 0 14px 34px rgba(15, 36, 53, 0.12);
+  }
+
+  .logo-card img {
+    max-width: 135px;
+    max-height: 52px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: grayscale(1);
+    opacity: 0.6;
+    transition: filter 0.25s ease, opacity 0.25s ease;
+  }
+
+  .logo-card:hover img {
+    filter: grayscale(0);
+    opacity: 1;
+  }
+}
+
+@keyframes trustedBrandsMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+@keyframes cautionTapeDrift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .trusted-brands-section {
+    padding: 64px 0;
+  }
+
+  .section-header {
+    margin-bottom: 22px;
+  }
+
+  .caution-tape-separator {
+    height: 28px;
+    margin-bottom: 28px;
+  }
+
+  .caution-tape-separator::before,
+  .caution-tape-separator::after {
+    width: 48px;
+  }
+
+  .caution-tape-track {
+    gap: 20px;
+    font-size: 9px;
+  }
+
+  .logo-track {
+    gap: 20px;
+    animation-duration: 18s;
+  }
+
+  .logo-card {
+    width: 150px;
+    height: 82px;
+    padding: 16px 22px;
+  }
+
+  .logo-card img {
+    max-width: 110px;
+    max-height: 42px;
+  }
+
+  .logo-marquee::before,
+  .logo-marquee::after {
+    width: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-marquee {
+    overflow-x: auto;
+  }
+
+  .logo-track {
+    animation: none;
+  }
+
+  .caution-tape-track {
+    animation: none;
   }
 }

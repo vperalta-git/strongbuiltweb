@@ -7,6 +7,8 @@ export type Brand = {
 
 export const productBrands: Brand[] = [
   { name: "TRACMAC", slug: "tracmac", initials: "TM" },
+  { name: "Adela", slug: "adela", initials: "AD" },
+  { name: "Safety Jogger", slug: "safety-jogger", initials: "SJ" },
   { name: "3M", slug: "3m", initials: "3M" },
   { name: "Honeywell", slug: "honeywell", initials: "HW" },
   { name: "Delta Plus", slug: "delta-plus", initials: "DP" },

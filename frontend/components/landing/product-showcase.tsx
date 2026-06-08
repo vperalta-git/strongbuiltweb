@@ -1,122 +1,154 @@
+import Image, { type StaticImageData } from "next/image"
 import Link from "next/link"
+import {
+  Anchor,
+  ArrowRight,
+  Ear,
+  Eye,
+  Footprints,
+  Hand,
+  HardHat,
+  ShieldCheck,
+  Wind,
+  type LucideIcon,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { HardHat, ShieldCheck, Hand, Footprints, Eye, Anchor, Wind, Ear } from "lucide-react"
+import { type ProductCategoryName } from "@/lib/product-data"
+import footProtectionImage from "@/assets/homedesign/category-foot-protection.png"
+import headProtectionImage from "@/assets/homedesign/category-head-protection.png"
+import fallProtectionImage from "@/assets/homedesign/category-fall-protection.png"
+import eyeFaceProtectionImage from "@/assets/homedesign/category-eye-face-protection.png"
+import hearingProtectionImage from "@/assets/homedesign/category-hearing-protection.png"
+import respiratoryProtectionImage from "@/assets/homedesign/category-respiratory-protection.png"
+import handProtectionImage from "@/assets/homedesign/category-hand-protection.png"
+import workwearImage from "@/assets/homedesign/category-workwear.png"
 
-const products = [
-  {
-    icon: HardHat,
-    name: "ProGuard Industrial Hard Hat",
-    category: "Head Protection",
-    spec: "ANSI Z89.1 Type I Class E",
-    badge: "Best Seller",
-  },
-  {
-    icon: ShieldCheck,
-    name: "HiVis Reflective Safety Vest",
-    category: "Workwear",
-    spec: "ANSI/ISEA 107 Class 3",
-    badge: null,
-  },
-  {
-    icon: Hand,
-    name: "CutShield Level 5 Gloves",
-    category: "Hand Protection",
-    spec: "EN 388:2016 Level 5",
-    badge: "New",
-  },
+type FeaturedCategory = {
+  icon: LucideIcon
+  name: ProductCategoryName
+  description: string
+  image: StaticImageData
+}
+
+const featuredCategories: FeaturedCategory[] = [
   {
     icon: Footprints,
-    name: "TitanStep Steel Toe Boots",
-    category: "Foot Protection",
-    spec: "ASTM F2413-18",
-    badge: null,
+    name: "Foot Protection",
+    description: "Safety footwear for daily site work, wet floors, and heavy-duty industrial environments.",
+    image: footProtectionImage,
   },
   {
-    icon: Eye,
-    name: "ClearView Safety Goggles",
-    category: "Eye and Face Protection",
-    spec: "ANSI Z87.1+",
-    badge: null,
+    icon: HardHat,
+    name: "Head Protection",
+    description: "Hard hats, bump caps, and helmet accessories for construction and industrial sites.",
+    image: headProtectionImage,
   },
   {
     icon: Anchor,
-    name: "FallSafe Full Body Harness",
-    category: "Fall Protection",
-    spec: "OSHA 1926.502",
-    badge: "Popular",
+    name: "Fall Protection",
+    description: "Harnesses, lanyards, and anchors for elevated work and controlled access zones.",
+    image: fallProtectionImage,
   },
   {
-    icon: Wind,
-    name: "AirPure P100 Respirator",
-    category: "Respiratory Protection",
-    spec: "NIOSH N95/P100",
-    badge: null,
+    icon: Eye,
+    name: "Eye and Face Protection",
+    description: "Safety glasses, goggles, and shields for impact, splash, and dust protection.",
+    image: eyeFaceProtectionImage,
   },
   {
     icon: Ear,
-    name: "NoiseGuard Pro Earmuffs",
-    category: "Hearing Protection",
-    spec: "NRR 31dB",
-    badge: null,
+    name: "Hearing Protection",
+    description: "Earplugs and earmuffs for high-noise production lines and machinery areas.",
+    image: hearingProtectionImage,
+  },
+  {
+    icon: Wind,
+    name: "Respiratory Protection",
+    description: "Masks and respirators for dust, fumes, and airborne particulate control.",
+    image: respiratoryProtectionImage,
+  },
+  {
+    icon: Hand,
+    name: "Hand Protection",
+    description: "Work gloves for cut resistance, grip, chemical handling, and general protection.",
+    image: handProtectionImage,
+  },
+  {
+    icon: ShieldCheck,
+    name: "Workwear",
+    description: "Durable uniforms, coveralls, and high-visibility garments for daily operations.",
+    image: workwearImage,
   },
 ]
 
 export function ProductShowcase() {
   return (
-    <section className="bg-background py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <section className="relative overflow-hidden bg-[#fbfaf7] py-18 lg:py-24">
+      <div
+        className="pointer-events-none absolute right-0 top-10 h-80 w-80 opacity-[0.07]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #f97316 2px, transparent 2px)",
+          backgroundSize: "18px 18px",
+        }}
+      />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rotate-45 border-y-[28px] border-orange-100/65" />
+
+      <div className="section-shell relative">
+        <div className="mb-10 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <span className="text-sm font-semibold uppercase tracking-wider text-primary">Featured Categories</span>
-            <h2 className="mt-3 text-3xl font-bold text-foreground text-balance sm:text-4xl">
+            <span className="text-sm font-extrabold uppercase tracking-[0.22em] text-primary">Featured Categories</span>
+            <h2 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-[#0b2038] text-balance sm:text-5xl">
               PPE essentials organized for quick procurement
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground text-pretty">
-              Start with the most requested safety gear, then jump into the catalog to filter by brand,
-              category, specs, and certification notes.
+            <p className="mt-5 max-w-3xl text-base leading-7 text-slate-600 text-pretty">
+              Start with the most requested safety gear, then jump into the catalog to filter by brand, category, specs,
+              and certification notes.
             </p>
           </div>
-          <Button size="lg" asChild>
-            <Link href="/products">Browse Full Catalog</Link>
+          <Button size="lg" className="h-12 px-7 shadow-lg shadow-orange-950/15" asChild>
+            <Link href="/products">
+              Browse Full Catalog
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <Card
-              key={product.name}
-              className="group hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30"
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {featuredCategories.map((category) => (
+            <Link
+              key={category.name}
+              href={`/products?category=${encodeURIComponent(category.name)}`}
+              className="group relative flex min-h-[390px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/8 transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-slate-900/14"
             >
-              <CardContent className="p-6">
-                <div className="aspect-square bg-muted rounded-lg mb-4 flex items-center justify-center group-hover:bg-primary/5 transition-colors relative overflow-hidden">
-                  <product.icon className="h-16 w-16 text-muted-foreground/50 group-hover:text-primary/50 transition-colors" />
-                  {product.badge && (
-                    <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-                      {product.badge}
-                    </Badge>
-                  )}
+              <div className="absolute inset-x-0 top-0 z-20 mx-auto h-1 w-[42%] rounded-b-full bg-primary transition-all duration-300 group-hover:w-1/2 group-hover:h-1.5" />
+              <div className="flex w-full flex-col">
+                <div className="relative h-44 overflow-hidden p-2">
+                  <div className="relative h-full overflow-hidden rounded-md">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/80 to-transparent" />
+                  </div>
                 </div>
-                
-                <div className="space-y-1">
-                  <p className="text-xs text-primary font-medium uppercase tracking-wider">
-                    {product.category}
-                  </p>
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                    {product.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {product.spec}
-                  </p>
+
+                <div className="relative flex flex-1 flex-col p-5 pt-0">
+                  <div className="-mt-8 mb-4 flex h-14 w-14 items-center justify-center rounded-lg border border-orange-100 bg-orange-50 text-primary shadow-lg shadow-slate-900/8">
+                    <category.icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="text-xl font-extrabold leading-tight text-[#0b2038]">{category.name}</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{category.description}</p>
+
+                  <div className="mt-auto flex items-center justify-between border-t border-slate-200 pt-4 text-sm font-extrabold text-primary">
+                    <span>View category</span>
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </div>
                 </div>
-              </CardContent>
-              <CardFooter className="p-6 pt-0">
-                <Button variant="outline" size="sm" className="w-full" asChild>
-                  <Link href={`/products?category=${encodeURIComponent(product.category)}`}>View Similar</Link>
-                </Button>
-              </CardFooter>
-            </Card>
+              </div>
+            </Link>
           ))}
         </div>
       </div>

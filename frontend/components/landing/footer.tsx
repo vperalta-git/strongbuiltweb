@@ -37,27 +37,28 @@ const contactLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-foreground text-background">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Main Footer */}
-        <div className="py-16 grid sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Brand Column */}
+    <footer className="bg-[#243140] text-white">
+      <div className="section-shell">
+        <div className="grid gap-8 py-14 sm:grid-cols-2 lg:grid-cols-5 lg:gap-12">
           <div className="lg:col-span-2">
             <div className="mb-6">
-              <div className="inline-flex rounded-md bg-background px-5 py-4">
+              <div className="inline-flex px-0 py-0">
                 <Image
                   src={tmacLogo}
                   alt="TRACMAC Marketing logo"
-                  className="h-20 w-auto object-contain lg:h-24"
+                  className="h-16 w-auto object-contain lg:h-18"
                 />
               </div>
             </div>
-            <div className="flex gap-4">
+            <p className="max-w-sm text-sm leading-7 text-white/62">
+              Industrial PPE, safety supplies, and procurement support for teams that need reliable protection.
+            </p>
+            <div className="mt-6 flex gap-3">
               {contactLinks.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="h-10 w-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white/10 transition-colors hover:bg-primary hover:text-primary-foreground"
                   aria-label={item.label}
                 >
                   <item.icon className="h-5 w-5" />
@@ -66,13 +67,12 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Products */}
           <div>
-            <h3 className="font-semibold text-background mb-4">Products</h3>
+            <h3 className="mb-4 font-semibold text-white">Products</h3>
             <ul className="space-y-3">
               {footerLinks.products.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-background/70 hover:text-primary transition-colors text-sm">
+                  <Link href={link.href} className="text-sm text-white/62 transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -80,13 +80,12 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Industries */}
           <div>
-            <h3 className="font-semibold text-background mb-4">Industries</h3>
+            <h3 className="mb-4 font-semibold text-white">Industries</h3>
             <ul className="space-y-3">
               {footerLinks.industries.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-background/70 hover:text-primary transition-colors text-sm">
+                  <Link href={link.href} className="text-sm text-white/62 transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -94,13 +93,12 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
           <div>
-            <h3 className="font-semibold text-background mb-4">Company</h3>
+            <h3 className="mb-4 font-semibold text-white">Company</h3>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-background/70 hover:text-primary transition-colors text-sm">
+                  <Link href={link.href} className="text-sm text-white/62 transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -109,13 +107,12 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="py-6 border-t border-background/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-background/50">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-6 sm:flex-row">
+          <p className="text-sm text-white/50">
             &copy; {new Date().getFullYear()} TRACMAC Marketing. All rights reserved.
           </p>
-          <div className="flex gap-6 text-sm text-background/50">
-            <Link href="/admin" className="hover:text-background/80 transition-colors">
+          <div className="flex gap-6 text-sm text-white/50">
+            <Link href="/admin" className="transition-colors hover:text-white">
               Admin Login
             </Link>
           </div>

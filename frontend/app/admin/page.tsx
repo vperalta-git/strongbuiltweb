@@ -4,10 +4,37 @@ import { useEffect, useState } from "react"
 import type { FormEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { HardDrive, ImagePlus, LogOut, PackagePlus, Pencil, ShieldCheck, Trash2, X } from "lucide-react"
+import {
+  Bell,
+  Boxes,
+  ChevronDown,
+  ClipboardList,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  FolderOpen,
+  HardDrive,
+  Home,
+  ImagePlus,
+  LockKeyhole,
+  LogOut,
+  Menu,
+  PackagePlus,
+  Pencil,
+  RefreshCw,
+  Search,
+  Settings2,
+  ShieldCheck,
+  Tags,
+  Trash2,
+  UsersRound,
+  UserRound,
+  X,
+} from "lucide-react"
 import { Header } from "@/components/landing/header"
 import { Footer } from "@/components/landing/footer"
 import { BrandMark } from "@/components/brand-mark"
+import tmacLogo from "@/assets/tmaclogo.png"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,6 +46,18 @@ import { productBrands } from "@/lib/brand-data"
 import { productCategories } from "@/lib/product-data"
 import type { CatalogProduct } from "@/lib/product-data"
 
+const adminNavItems = [
+  { label: "Dashboard", icon: Home },
+  { label: "Products", icon: PackagePlus },
+  { label: "Categories", icon: FolderOpen },
+  { label: "Brands", icon: Tags },
+  { label: "Orders / Quotes", icon: ClipboardList },
+  { label: "Users", icon: UsersRound },
+  { label: "Settings", icon: Settings2 },
+] as const
+
+type AdminSection = (typeof adminNavItems)[number]["label"]
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isCheckingSession, setIsCheckingSession] = useState(true)
@@ -28,6 +67,64 @@ export default function AdminPage() {
   const [products, setProducts] = useState<CatalogProduct[]>([])
   const [editingProduct, setEditingProduct] = useState<CatalogProduct | null>(null)
   const [previewUrl, setPreviewUrl] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [productSearchQuery, setProductSearchQuery] = useState("")
+  const [formResetKey, setFormResetKey] = useState(0)
+  const [activeAdminSection, setActiveAdminSection] = useState<AdminSection>("Products")
+
+  const visibleAdminProducts = products.filter((product) => {
+    const query = productSearchQuery.trim().toLowerCase()
+
+    if (!query) {
+      return true
+    }
+
+    return [product.name, product.brand, product.category, product.description, product.spec, product.badge]
+      .filter(Boolean)
+      .some((value) => value?.toLowerCase().includes(query))
+  })
+  const productsWithImages = products.filter((product) => Boolean(product.imageUrl)).length
+  const demoProductCount = products.filter((product) => product.isDemo).length
+  const adminProductCount = products.length - demoProductCount
+  const categorySummaries = productCategories.map((category) => ({
+    ...category,
+    count: products.filter((product) => product.category === category.name).length,
+  }))
+  const brandSummaries = productBrands.map((brand) => ({
+    ...brand,
+    count: products.filter((product) => product.brand === brand.name).length,
+  }))
+
+  const adminSectionCopy: Record<AdminSection, { title: string; description: string }> = {
+    Dashboard: {
+      title: "Admin dashboard",
+      description: "Monitor catalog coverage, product counts, and current admin storage status.",
+    },
+    Products: {
+      title: "Manage the TRACMAC product catalog",
+      description: "Add product names, images, descriptions, categories, and key specifications directly to the live catalog.",
+    },
+    Categories: {
+      title: "Manage product categories",
+      description: "Review category coverage and jump back into products when a category needs more catalog items.",
+    },
+    Brands: {
+      title: "Manage product brands",
+      description: "Review supported TRACMAC supplier brands and how many products are currently assigned to each brand.",
+    },
+    "Orders / Quotes": {
+      title: "Orders and quotes",
+      description: "Track quote requests and procurement conversations as the catalog workflow grows.",
+    },
+    Users: {
+      title: "Admin users",
+      description: "Review admin access status and session controls for the product catalog system.",
+    },
+    Settings: {
+      title: "Admin settings",
+      description: "Check storage behavior, image upload limits, and catalog publishing settings.",
+    },
+  }
 
   async function loadAdminProducts() {
     const response = await fetch("/api/admin/products", { cache: "no-store" })
@@ -92,6 +189,11 @@ export default function AdminPage() {
     setEditingProduct(null)
     setPreviewUrl("")
     setMessage("")
+    setFormResetKey((current) => current + 1)
+  }
+
+  function handleClearProductForm() {
+    handleCancelEdit()
   }
 
   async function handleProductSubmit(event: FormEvent<HTMLFormElement>) {
@@ -136,6 +238,7 @@ export default function AdminPage() {
     form.reset()
     setEditingProduct(null)
     setPreviewUrl("")
+    setFormResetKey((current) => current + 1)
     setMessage(editingProduct ? "Product updated." : "Product saved and published to the catalog.")
   }
 
@@ -175,112 +278,309 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <section className="bg-foreground py-14 text-background">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <Badge className="bg-primary text-primary-foreground">Admin</Badge>
-            <div className="mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <h1 className="max-w-3xl text-4xl font-bold leading-tight text-balance sm:text-5xl">
-                  Manage the TRACMAC product catalog
-                </h1>
-                <p className="mt-4 max-w-2xl text-lg text-background/75">
-                  Add product names, images, descriptions, categories, and key specifications directly to the live catalog
-                </p>
-              </div>
-              <Button variant="secondary" asChild>
-                <Link href="/products">View Catalog</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-12 lg:py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            {isAuthenticated && (
-              <Alert className="mb-6 border-primary/30 bg-primary/10">
-                <HardDrive className="h-4 w-4 text-primary" />
-                <AlertTitle>Local demo storage</AlertTitle>
-                <AlertDescription>
-                  Products are saved on this machine in local project files. Demo products stay visible until you add
-                  your own catalog items.
-                </AlertDescription>
-              </Alert>
-            )}
+    <div className="min-h-screen bg-[#fbfaf7]">
+      {!isAuthenticated && <Header />}
+      <main className={!isAuthenticated ? "border-t border-slate-200/70" : ""}>
+        <section className={isAuthenticated ? "p-0" : isCheckingSession ? "py-12 lg:py-16" : "p-0"}>
+          <div className={isAuthenticated ? "" : isCheckingSession ? "section-shell" : ""}>
             {isCheckingSession ? (
-              <Card>
+              <Card className="surface-card">
                 <CardContent className="p-6 text-sm text-muted-foreground">Checking admin session...</CardContent>
               </Card>
             ) : !isAuthenticated ? (
-              <Card className="mx-auto max-w-md">
-                <CardHeader>
-                  <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/15">
-                    <ShieldCheck className="h-6 w-6 text-primary" />
-                  </div>
-                  <CardTitle>Admin Login</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form className="space-y-5" onSubmit={handleLogin}>
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <Input id="username" name="username" autoComplete="username" required />
+              <div className="grid min-h-[calc(100vh-5rem)] bg-[#faf7f2] lg:grid-cols-[minmax(0,1.05fr)_minmax(460px,0.95fr)]">
+                <div className="relative overflow-hidden bg-gradient-to-br from-[#061625] via-[#0f2435] to-[#102d45] px-6 py-14 text-white sm:px-10 lg:flex lg:items-center lg:px-16 lg:py-20 lg:[clip-path:polygon(0_0,100%_0,84%_100%,0_100%)]">
+                  <div
+                    className="pointer-events-none absolute bottom-14 left-0 h-44 w-52 opacity-[0.14]"
+                    style={{
+                      backgroundImage: "radial-gradient(circle, #f26700 1.4px, transparent 1.4px)",
+                      backgroundSize: "18px 18px",
+                    }}
+                  />
+                  <Settings2 className="pointer-events-none absolute right-20 top-20 h-44 w-44 rotate-12 text-white/[0.035]" />
+                  <Settings2 className="pointer-events-none absolute bottom-16 right-10 h-32 w-32 -rotate-12 text-orange-500/[0.08]" />
+                  <div className="relative z-10 max-w-xl">
+                    <Badge className="bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground shadow-lg shadow-orange-950/30">
+                      Admin
+                    </Badge>
+                    <h1 className="mt-7 text-4xl font-extrabold leading-tight tracking-normal text-balance sm:text-5xl lg:text-6xl">
+                      Manage the <span className="text-primary">TRACMAC</span> product catalog
+                    </h1>
+                    <div className="mt-6 h-0.5 w-16 rounded-full bg-primary" />
+                    <p className="mt-7 max-w-lg text-base leading-8 text-white/76 sm:text-lg">
+                      Add product names, images, descriptions, categories, and key specifications directly to the live
+                      catalog.
+                    </p>
+
+                    <div className="mt-10 grid gap-4 sm:grid-cols-3">
+                      {[
+                        { label: "Secure Access", icon: ShieldCheck },
+                        { label: "Easy Management", icon: Boxes },
+                        { label: "Real-time Updates", icon: RefreshCw },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center gap-3 border-white/10 sm:border-r sm:last:border-r-0">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-orange-400/20 bg-[#1b3044] text-primary shadow-inner">
+                            <item.icon className="h-4 w-4" />
+                          </span>
+                          <span className="max-w-24 text-sm font-bold leading-5 text-white">{item.label}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <Input id="password" name="password" type="password" autoComplete="current-password" required />
-                    </div>
-                    {message && <p className="text-sm text-destructive">{message}</p>}
-                    <Button className="w-full" type="submit">
-                      Login
+
+                    <Button
+                      variant="outline"
+                      className="mt-10 border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                      asChild
+                    >
+                      <Link href="/products">View Catalog</Link>
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-                <Card>
-                  <CardHeader className="flex flex-row items-start justify-between gap-4">
-                    <div>
-                      <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/15">
-                        <PackagePlus className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+
+                <div className="relative flex items-center justify-center overflow-hidden px-4 py-12 sm:px-8 lg:px-12">
+                  <div
+                    className="pointer-events-none absolute right-8 top-8 h-52 w-52 opacity-[0.16]"
+                    style={{
+                      backgroundImage: "radial-gradient(circle, #f26700 1.4px, transparent 1.4px)",
+                      backgroundSize: "18px 18px",
+                    }}
+                  />
+                  <Settings2 className="pointer-events-none absolute bottom-16 right-12 h-36 w-36 text-[#d6dee8]/45" />
+                  <div className="pointer-events-none absolute left-0 top-0 hidden h-full w-8 bg-primary lg:block lg:-skew-x-12" />
+
+                  <Card className="relative z-10 w-full max-w-xl rounded-xl border border-[#d6dee8] bg-white shadow-2xl shadow-slate-900/12">
+                    <CardHeader className="items-center px-6 pb-4 pt-8 text-center sm:px-8">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-orange-100 text-primary">
+                        <LockKeyhole className="h-7 w-7" />
                       </div>
-                      <CardTitle>{editingProduct ? "Edit Product" : "Add Product"}</CardTitle>
-                    </div>
-                    <div className="flex gap-2">
-                      {editingProduct && (
-                        <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
-                          <X className="mr-2 h-4 w-4" />
-                          Cancel
+                      <CardTitle className="mt-4 text-3xl font-extrabold text-[#061625]">Admin Login</CardTitle>
+                      <p className="text-sm text-[#53677a]">Please enter your credentials to continue</p>
+                    </CardHeader>
+                    <CardContent className="px-6 pb-8 sm:px-8">
+                      <form className="space-y-5" onSubmit={handleLogin}>
+                        <div className="space-y-2">
+                          <Label htmlFor="username" className="font-semibold text-[#0f2435]">
+                            Username
+                          </Label>
+                          <div className="relative">
+                            <UserRound className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#53677a]" />
+                            <Input
+                              id="username"
+                              name="username"
+                              autoComplete="username"
+                              placeholder="Enter your username"
+                              className="h-12 border-[#d6dee8] bg-white pl-11 text-[#0f2435] focus-visible:border-primary focus-visible:ring-primary/20"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="password" className="font-semibold text-[#0f2435]">
+                            Password
+                          </Label>
+                          <div className="relative">
+                            <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#53677a]" />
+                            <Input
+                              id="password"
+                              name="password"
+                              type={showPassword ? "text" : "password"}
+                              autoComplete="current-password"
+                              placeholder="Enter your password"
+                              className="h-12 border-[#d6dee8] bg-white px-11 text-[#0f2435] focus-visible:border-primary focus-visible:ring-primary/20"
+                              required
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-[#53677a] transition hover:text-[#0f2435]"
+                              onClick={() => setShowPassword((current) => !current)}
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                        </div>
+                        {message && <p className="text-sm font-medium text-destructive">{message}</p>}
+                        <Button
+                          className="h-12 w-full bg-primary font-bold text-white shadow-lg shadow-orange-950/15 hover:bg-[#d95400]"
+                          type="submit"
+                        >
+                          Login
                         </Button>
-                      )}
-                      <Button variant="outline" size="sm" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
+                      </form>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ) : (
+              <div className="min-h-screen bg-[#f6f8fb] text-[#0f2435] lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
+                <aside className="flex flex-col bg-gradient-to-b from-[#061625] via-[#0f2435] to-[#102d45] px-3 py-5 text-white lg:min-h-screen">
+                  <div className="flex items-center justify-between px-3">
+                    <Image src={tmacLogo} alt="TRACMAC Marketing logo" className="h-12 w-auto object-contain" priority />
+                    <button
+                      type="button"
+                      className="rounded-md p-2 text-white/80 transition hover:bg-white/10 hover:text-white lg:hidden"
+                      aria-label="Open admin menu"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="mt-9 px-3 text-xs font-bold uppercase tracking-[0.16em] text-white/48">Admin Panel</div>
+                  <nav className="mt-5 space-y-1.5">
+                    {adminNavItems.map((item) => {
+                      const isActive = item.label === activeAdminSection
+
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => setActiveAdminSection(item.label)}
+                          className={`flex w-full items-center gap-3 rounded-md px-4 py-3 text-left text-sm font-semibold transition ${
+                            isActive
+                              ? "border-l-2 border-primary bg-white/10 text-primary shadow-inner"
+                              : "text-white/86 hover:bg-white/8 hover:text-white"
+                          }`}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          {item.label}
+                        </button>
+                      )
+                    })}
+                  </nav>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="mt-8 flex w-full items-center gap-3 rounded-md bg-white/8 px-4 py-3 text-left text-sm font-semibold text-white transition hover:bg-white/12 lg:mt-auto"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Logout
+                  </button>
+                </aside>
+
+                <div className="min-w-0">
+                  <header className="sticky top-0 z-30 border-b border-[#d6dee8] bg-[#061625] text-white shadow-sm lg:h-[73px]">
+                    <div className="flex min-h-[73px] flex-wrap items-center gap-5 px-5 sm:px-8">
+                      <button
+                        type="button"
+                        className="hidden rounded-md p-2 text-white/80 transition hover:bg-white/10 hover:text-white lg:inline-flex"
+                        aria-label="Toggle sidebar"
+                      >
+                        <Menu className="h-5 w-5" />
+                      </button>
+                      <nav className="hidden items-center gap-7 text-sm font-bold lg:flex">
+                        {adminNavItems.map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => setActiveAdminSection(item.label)}
+                            className={`relative py-6 ${
+                              item.label === activeAdminSection
+                                ? "text-white after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary"
+                                : "text-white/75 transition hover:text-white"
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </nav>
+                      <div className="ml-auto flex items-center gap-5">
+                        <button type="button" className="relative text-white/86 transition hover:text-white" aria-label="Notifications">
+                          <Bell className="h-5 w-5" />
+                          <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                            3
+                          </span>
+                        </button>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0f2435]">
+                            <UserRound className="h-5 w-5" />
+                          </div>
+                          <div className="hidden leading-tight sm:block">
+                            <p className="text-sm font-bold">Admin</p>
+                            <p className="text-xs text-white/64">Administrator</p>
+                          </div>
+                          <ChevronDown className="h-4 w-4 text-white/70" />
+                        </div>
+                      </div>
+                    </div>
+                  </header>
+
+                  <div className="px-5 py-8 sm:px-8">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <h1 className="text-3xl font-extrabold leading-tight text-[#061625]">
+                          {adminSectionCopy[activeAdminSection].title}
+                        </h1>
+                        <p className="mt-3 max-w-3xl text-sm leading-6 text-[#53677a]">
+                          {adminSectionCopy[activeAdminSection].description}
+                        </p>
+                      </div>
+                      <Button className="h-11 bg-primary px-5 font-bold text-white shadow-lg shadow-orange-950/10 hover:bg-[#d95400]" asChild>
+                        <Link href="/products">
+                          View Catalog
+                          <ExternalLink className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
+
+                    <Alert className="mt-6 flex items-start gap-4 border-orange-200 bg-orange-50/85 text-[#0f2435] shadow-sm">
+                      <HardDrive className="mt-0.5 h-5 w-5 text-primary" />
+                      <div className="min-w-0 flex-1">
+                        <AlertTitle className="font-extrabold">Local storage is in use</AlertTitle>
+                        <AlertDescription className="text-sm text-[#53677a]">
+                          Products are stored on this device in local storage. Changes will only be visible on this device and not synced across other devices.
+                        </AlertDescription>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" className="hidden border-[#d6dee8] bg-white text-[#0f2435] sm:inline-flex">
+                        Learn More
+                      </Button>
+                    </Alert>
+
+                    {activeAdminSection === "Products" ? (
+                    <div className="mt-6 grid gap-7 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
+                <Card className="overflow-hidden rounded-lg border border-[#d6dee8] bg-white shadow-lg shadow-slate-900/6">
+                  <CardHeader className="flex flex-row items-center justify-between gap-4 border-b border-[#e8eef4] px-5 py-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-100 text-primary">
+                        <PackagePlus className="h-5 w-5" />
+                      </div>
+                      <CardTitle className="text-lg font-extrabold text-[#0b2038]">
+                        {editingProduct ? "Edit Product" : "Add New Product"}
+                      </CardTitle>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" className="border-[#d6dee8]" onClick={handleClearProductForm}>
+                      Clear Form
+                    </Button>
                   </CardHeader>
-                  <CardContent>
-                    <form key={editingProduct?.id ?? "new-product"} className="grid gap-5" onSubmit={handleProductSubmit}>
+                  <CardContent className="p-5">
+                    <form
+                      key={`${editingProduct?.id ?? "new-product"}-${formResetKey}`}
+                      className="grid gap-5"
+                      onSubmit={handleProductSubmit}
+                    >
                       <div className="grid gap-5 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="name">Product Name</Label>
+                          <Label htmlFor="name" className="text-xs font-extrabold text-[#0f2435]">
+                            Product Name <span className="text-primary">*</span>
+                          </Label>
                           <Input
                             id="name"
                             name="name"
-                            placeholder="Example: ImpactPro Safety Glasses"
+                            placeholder="Enter product name"
                             defaultValue={editingProduct?.name ?? ""}
+                            className="h-10 border-[#d6dee8] bg-white focus-visible:border-primary focus-visible:ring-primary/20"
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="brand">Brand</Label>
+                          <Label htmlFor="brand" className="text-xs font-extrabold text-[#0f2435]">
+                            Brand <span className="text-primary">*</span>
+                          </Label>
                           <select
                             id="brand"
                             name="brand"
                             defaultValue={editingProduct?.brand ?? ""}
-                            className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm shadow-xs outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            className="h-10 w-full rounded-md border border-[#d6dee8] bg-white px-3 text-sm text-[#0f2435] shadow-xs outline-none transition focus:border-primary focus:ring-[3px] focus:ring-primary/20"
                             required
                           >
                             <option value="" disabled>
@@ -297,12 +597,14 @@ export default function AdminPage() {
 
                       <div className="grid gap-5 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="category">Category</Label>
+                          <Label htmlFor="category" className="text-xs font-extrabold text-[#0f2435]">
+                            Category <span className="text-primary">*</span>
+                          </Label>
                           <select
                             id="category"
                             name="category"
                             defaultValue={editingProduct?.category ?? productCategories[0]?.name}
-                            className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm shadow-xs outline-none transition focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            className="h-10 w-full rounded-md border border-[#d6dee8] bg-white px-3 text-sm text-[#0f2435] shadow-xs outline-none transition focus:border-primary focus:ring-[3px] focus:ring-primary/20"
                             required
                           >
                             {productCategories.map((category) => (
@@ -313,45 +615,52 @@ export default function AdminPage() {
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="badge">Badge</Label>
+                          <Label htmlFor="badge" className="text-xs font-extrabold text-[#0f2435]">Badge</Label>
                           <Input
                             id="badge"
                             name="badge"
                             placeholder="Optional: New, Best Seller, Popular"
                             defaultValue={editingProduct?.badge ?? ""}
+                            className="h-10 border-[#d6dee8] bg-white focus-visible:border-primary focus-visible:ring-primary/20"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description" className="text-xs font-extrabold text-[#0f2435]">
+                          Description <span className="text-primary">*</span>
+                        </Label>
                         <Textarea
                           id="description"
                           name="description"
-                          placeholder="Short customer-facing product description"
+                          placeholder="Enter a detailed product description..."
                           defaultValue={editingProduct?.description ?? ""}
+                          className="min-h-24 border-[#d6dee8] bg-white focus-visible:border-primary focus-visible:ring-primary/20"
                           required
                         />
                       </div>
 
                       <div className="grid gap-5 md:grid-cols-1">
                         <div className="space-y-2">
-                          <Label htmlFor="spec">Specs</Label>
+                          <Label htmlFor="spec" className="text-xs font-extrabold text-[#0f2435]">Specifications</Label>
                           <Input
                             id="spec"
                             name="spec"
-                            placeholder="Example: ANSI Z87.1+, anti-fog lens"
+                            placeholder="Material, Size, Color, Capacity, etc."
                             defaultValue={editingProduct?.spec ?? ""}
+                            className="h-10 border-[#d6dee8] bg-white focus-visible:border-primary focus-visible:ring-primary/20"
                             required
                           />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="image">Product Image</Label>
+                        <Label htmlFor="image" className="text-xs font-extrabold text-[#0f2435]">
+                          Product Image <span className="text-primary">*</span>
+                        </Label>
                         <label
                           htmlFor="image"
-                          className="flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 p-6 text-center transition hover:border-primary/50 hover:bg-primary/5"
+                          className="flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[#b9c7d6] bg-[#eef3f7]/70 p-6 text-center transition hover:border-primary/50 hover:bg-orange-50"
                         >
                           {previewUrl ? (
                             <div className="relative">
@@ -369,11 +678,11 @@ export default function AdminPage() {
                             </div>
                           ) : (
                             <>
-                              <ImagePlus className="h-10 w-10 text-muted-foreground" />
-                              <span className="mt-3 text-sm font-medium text-foreground">
-                                {editingProduct ? "Choose a new image" : "Choose an image"}
+                              <ImagePlus className="h-10 w-10 text-[#6d7f91]" />
+                              <span className="mt-3 text-sm font-extrabold text-[#0b2038]">Drag & drop images here</span>
+                              <span className="mt-1 text-xs text-[#53677a]">
+                                or click to browse JPG, PNG, WEBP up to 5MB each
                               </span>
-                              <span className="mt-1 text-xs text-muted-foreground">JPG, PNG, WEBP, or GIF up to 5MB</span>
                             </>
                           )}
                         </label>
@@ -416,82 +725,265 @@ export default function AdminPage() {
                           {message}
                         </p>
                       )}
-                      <Button type="submit" disabled={isSaving}>
-                        {isSaving ? "Saving..." : editingProduct ? "Update Product" : "Publish Product"}
+                      <p className="flex items-center gap-2 text-xs text-[#53677a]">
+                        <ImagePlus className="h-3.5 w-3.5" />
+                        Upload one product image
+                      </p>
+                      <Button
+                        className="h-11 bg-primary font-bold text-white shadow-lg shadow-orange-950/10 hover:bg-[#d95400]"
+                        type="submit"
+                        disabled={isSaving}
+                      >
+                        {isSaving ? "Saving..." : editingProduct ? "Update Product" : "Add Product"}
                       </Button>
                     </form>
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Admin Products</CardTitle>
+                <Card className="overflow-hidden rounded-lg border border-[#d6dee8] bg-white shadow-lg shadow-slate-900/6">
+                  <CardHeader className="flex flex-col gap-4 border-b border-[#e8eef4] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <CardTitle className="text-lg font-extrabold text-[#0b2038]">Existing Products</CardTitle>
+                    <label className="relative block sm:w-48 lg:w-56">
+                      <span className="sr-only">Search products</span>
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#53677a]" />
+                      <Input
+                        value={productSearchQuery}
+                        onChange={(event) => setProductSearchQuery(event.target.value)}
+                        placeholder="Search products..."
+                        className="h-10 border-[#d6dee8] bg-white pl-9 text-sm focus-visible:border-primary focus-visible:ring-primary/20"
+                      />
+                    </label>
                   </CardHeader>
-                  <CardContent>
-                    {products.length ? (
-                      <div className="space-y-4">
-                        {products.map((product) => (
-                          <div key={product.id} className="flex gap-3 rounded-lg border border-border p-3">
-                            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
+                  <CardContent className="p-0">
+                    {visibleAdminProducts.length ? (
+                      <div className="max-h-[690px] overflow-y-auto">
+                        {visibleAdminProducts.map((product) => (
+                          <div
+                            key={product.id}
+                            className="group grid gap-4 border-b border-[#e8eef4] p-4 transition last:border-b-0 hover:bg-[#fbfaf7] sm:grid-cols-[142px_minmax(0,1fr)_64px]"
+                          >
+                            <div className="flex h-32 items-center justify-center overflow-hidden rounded-md bg-[#eef3f7] p-3">
                               {product.imageUrl ? (
                                 <Image
                                   src={product.imageUrl}
                                   alt={product.name}
-                                  width={64}
-                                  height={64}
+                                  width={142}
+                                  height={128}
                                   unoptimized
-                                  className="h-full w-full object-cover"
+                                  className="h-full w-full object-contain"
                                 />
                               ) : (
-                                <BrandMark brand={product.brand} compact />
+                                <ImagePlus className="h-9 w-9 text-[#53677a]" />
                               )}
                             </div>
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-foreground">{product.name}</p>
-                              <p className="mt-1 text-xs font-medium uppercase tracking-wider text-primary">
-                                {product.brand} / {product.category}
+
+                            <div className="min-w-0 py-1">
+                              <p className="truncate text-lg font-extrabold text-[#0b2038]">{product.name}</p>
+                              <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.1em] text-primary">
+                                {product.brand}
                               </p>
-                              {product.isDemo && <p className="mt-1 text-xs font-medium text-muted-foreground">Demo item</p>}
-                              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.description}</p>
+                              <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#33485f]">{product.description}</p>
+                              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-[#53677a]">
+                                <span>{product.category}</span>
+                                {product.badge && <span className="rounded bg-[#eef3f7] px-2 py-0.5">{product.badge}</span>}
+                                {product.isDemo && <span>Demo item</span>}
+                              </div>
+                              <p className="mt-2 truncate text-xs font-semibold text-[#53677a]">Specs: {product.spec}</p>
                             </div>
-                            <div className="ml-auto flex shrink-0 gap-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                title="Edit product"
-                                disabled={product.isDemo}
-                                onClick={() => handleEditProduct(product)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
-                                title="Delete product"
-                                disabled={product.isDemo || deletingProductId === product.id}
-                                onClick={() => handleDeleteProduct(product)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+
+                            <div className="flex items-center justify-between gap-2 sm:flex-col sm:items-end">
+                              <BrandMark brand={product.brand} badge className="relative right-auto top-auto z-auto h-10 w-[58px]" />
+                              <div className="flex gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-[#0b2038] hover:bg-orange-50 hover:text-primary"
+                                  title="Edit product"
+                                  disabled={product.isDemo}
+                                  onClick={() => handleEditProduct(product)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:bg-red-50 hover:text-destructive"
+                                  title="Delete product"
+                                  disabled={product.isDemo || deletingProductId === product.id}
+                                  onClick={() => handleDeleteProduct(product)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No admin-added products yet.</p>
+                      <p className="p-5 text-sm text-muted-foreground">No admin-added products match your search.</p>
                     )}
                   </CardContent>
                 </Card>
+              </div>
+                    ) : (
+                      <div className="mt-6">
+                        {activeAdminSection === "Dashboard" && (
+                          <div className="grid gap-6">
+                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                              {[
+                                { label: "Total Products", value: products.length, note: "Live catalog records", icon: PackagePlus },
+                                { label: "Admin Added", value: adminProductCount, note: "Stored in project data", icon: Boxes },
+                                { label: "With Images", value: productsWithImages, note: "Product visuals available", icon: ImagePlus },
+                                { label: "Categories", value: categorySummaries.filter((category) => category.count > 0).length, note: "Currently populated", icon: FolderOpen },
+                              ].map((item) => (
+                                <Card key={item.label} className="border-[#d6dee8] bg-white shadow-sm">
+                                  <CardContent className="p-5">
+                                    <div className="flex items-center justify-between">
+                                      <span className="flex h-10 w-10 items-center justify-center rounded-md bg-orange-100 text-primary">
+                                        <item.icon className="h-5 w-5" />
+                                      </span>
+                                      <span className="text-3xl font-extrabold text-[#061625]">{item.value}</span>
+                                    </div>
+                                    <p className="mt-4 text-sm font-extrabold text-[#0f2435]">{item.label}</p>
+                                    <p className="mt-1 text-xs text-[#53677a]">{item.note}</p>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                            <Card className="border-[#d6dee8] bg-white shadow-sm">
+                              <CardHeader className="border-b border-[#e8eef4]">
+                                <CardTitle className="text-lg text-[#0b2038]">Catalog Coverage</CardTitle>
+                              </CardHeader>
+                              <CardContent className="grid gap-3 p-5 md:grid-cols-2">
+                                {categorySummaries.slice(0, 8).map((category) => (
+                                  <div key={category.name} className="flex items-center justify-between rounded-md border border-[#e8eef4] px-4 py-3">
+                                    <span className="text-sm font-semibold text-[#0f2435]">{category.name}</span>
+                                    <Badge className="bg-orange-50 text-primary hover:bg-orange-50">{category.count}</Badge>
+                                  </div>
+                                ))}
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
+
+                        {activeAdminSection === "Categories" && (
+                          <Card className="border-[#d6dee8] bg-white shadow-sm">
+                            <CardHeader className="border-b border-[#e8eef4]">
+                              <CardTitle className="text-lg text-[#0b2038]">Catalog Categories</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
+                              {categorySummaries.map((category) => (
+                                <button
+                                  key={category.name}
+                                  type="button"
+                                  onClick={() => setActiveAdminSection("Products")}
+                                  className="rounded-lg border border-[#d6dee8] bg-white p-4 text-left transition hover:border-primary hover:bg-orange-50/40"
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <h2 className="font-extrabold text-[#0f2435]">{category.name}</h2>
+                                    <Badge className="bg-[#eef3f7] text-[#53677a] hover:bg-[#eef3f7]">{category.count}</Badge>
+                                  </div>
+                                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#53677a]">{category.description}</p>
+                                </button>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {activeAdminSection === "Brands" && (
+                          <Card className="border-[#d6dee8] bg-white shadow-sm">
+                            <CardHeader className="border-b border-[#e8eef4]">
+                              <CardTitle className="text-lg text-[#0b2038]">Supported Brands</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
+                              {brandSummaries.map((brand) => (
+                                <div key={brand.slug} className="flex items-center justify-between rounded-lg border border-[#d6dee8] bg-white p-4">
+                                  <div>
+                                    <BrandMark brand={brand.name} badge className="relative right-auto top-auto z-auto" />
+                                    <p className="mt-3 text-sm font-extrabold text-[#0f2435]">{brand.name}</p>
+                                  </div>
+                                  <Badge className="bg-orange-50 text-primary hover:bg-orange-50">{brand.count}</Badge>
+                                </div>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {activeAdminSection === "Orders / Quotes" && (
+                          <Card className="border-[#d6dee8] bg-white shadow-sm">
+                            <CardContent className="flex min-h-80 flex-col items-center justify-center p-8 text-center">
+                              <ClipboardList className="h-12 w-12 text-primary" />
+                              <h2 className="mt-4 text-xl font-extrabold text-[#0f2435]">Quote workflow ready</h2>
+                              <p className="mt-2 max-w-md text-sm leading-6 text-[#53677a]">
+                                Quote requests still route through the public catalog and contact flow. A dedicated quote inbox can plug into this section next.
+                              </p>
+                              <Button className="mt-6 bg-primary text-white hover:bg-[#d95400]" asChild>
+                                <Link href="/products">Open Product Catalog</Link>
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {activeAdminSection === "Users" && (
+                          <Card className="border-[#d6dee8] bg-white shadow-sm">
+                            <CardHeader className="border-b border-[#e8eef4]">
+                              <CardTitle className="text-lg text-[#0b2038]">Admin Access</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-5">
+                              <div className="flex flex-col gap-4 rounded-lg border border-[#d6dee8] p-5 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0f2435] text-white">
+                                    <UserRound className="h-6 w-6" />
+                                  </div>
+                                  <div>
+                                    <p className="font-extrabold text-[#0f2435]">Admin</p>
+                                    <p className="text-sm text-[#53677a]">Administrator session active</p>
+                                  </div>
+                                </div>
+                                <Button type="button" variant="outline" onClick={handleLogout}>
+                                  <LogOut className="h-4 w-4" />
+                                  Logout
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {activeAdminSection === "Settings" && (
+                          <Card className="border-[#d6dee8] bg-white shadow-sm">
+                            <CardHeader className="border-b border-[#e8eef4]">
+                              <CardTitle className="text-lg text-[#0b2038]">Catalog Settings</CardTitle>
+                            </CardHeader>
+                            <CardContent className="grid gap-4 p-5 md:grid-cols-2">
+                              {[
+                                ["Storage", "Products are saved in the project data store and served to the public catalog API."],
+                                ["Image Uploads", "JPG, PNG, WEBP, and GIF product images up to 5MB are supported."],
+                                ["Session", "Admin sessions use the existing signed cookie authentication flow."],
+                                ["Publishing", "Saved products are available immediately on the public Products page."],
+                              ].map(([label, value]) => (
+                                <div key={label} className="rounded-lg border border-[#d6dee8] bg-[#fbfaf7] p-4">
+                                  <p className="font-extrabold text-[#0f2435]">{label}</p>
+                                  <p className="mt-2 text-sm leading-6 text-[#53677a]">{value}</p>
+                                </div>
+                              ))}
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+                    <footer className="mt-8 border-t border-[#d6dee8] py-5 text-center text-sm text-[#53677a]">
+                      &copy; {new Date().getFullYear()} TRACMAC Marketing. All rights reserved.
+                    </footer>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </section>
       </main>
-      <Footer />
+      {!isAuthenticated && <Footer />}
     </div>
   )
 }

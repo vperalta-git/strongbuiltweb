@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { getBrandByName } from "@/lib/brand-data"
 import { demoProducts, productCategories, type CatalogProduct, type ProductCategoryName } from "@/lib/product-data"
@@ -31,7 +31,15 @@ function isValidBrand(brand: string) {
 }
 
 function normalizeProduct(product: Partial<CatalogProduct>): CatalogProduct | null {
-  if (!product.id || !product.name || !product.category || !product.description || !product.spec) {
+  const legacyProduct = product as Partial<CatalogProduct> & {
+    image?: string
+    images?: string[]
+    specs?: string
+  }
+  const spec = product.spec ?? legacyProduct.specs
+  const imageUrl = product.imageUrl ?? legacyProduct.image ?? legacyProduct.images?.[0]
+
+  if (!product.id || !product.name || !product.category || !product.description || !spec) {
     return null
   }
 
@@ -45,9 +53,9 @@ function normalizeProduct(product: Partial<CatalogProduct>): CatalogProduct | nu
     category: product.category,
     brand: getBrandByName(cleanBrand(product.brand ?? ""))?.name ?? "TRACMAC",
     description: product.description,
-    spec: product.spec,
+    spec,
     badge: product.badge || undefined,
-    imageUrl: product.imageUrl || undefined,
+    imageUrl: imageUrl || undefined,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
     isDemo: product.isDemo,
@@ -96,7 +104,7 @@ function readProductPayload(formData: FormData) {
   const category = cleanText(formData.get("category"))
   const brand = cleanBrand(cleanText(formData.get("brand")))
   const description = cleanText(formData.get("description"))
-  const spec = cleanText(formData.get("spec"))
+  const spec = cleanText(formData.get("spec")) || cleanText(formData.get("specs"))
   const badge = cleanText(formData.get("badge"))
 
   if (!name || !category || !brand || !description || !spec) {
@@ -147,6 +155,18 @@ async function saveProductImage(file: File) {
   return `/uploads/products/${filename}`
 }
 
+async function deleteUploadedImage(imageUrl?: string) {
+  if (!imageUrl?.startsWith("/uploads/products/")) {
+    return
+  }
+
+  try {
+    await unlink(path.join(process.cwd(), "public", imageUrl))
+  } catch {
+    // Missing files should not block product updates or deletes.
+  }
+}
+
 export async function addProduct(formData: FormData) {
   const payload = readProductPayload(formData)
   const image = formData.get("image")
@@ -192,6 +212,10 @@ export async function updateProduct(id: string, formData: FormData) {
 
   await writeProducts(products.filter((item) => !item.isDemo).map((item) => (item.id === id ? product : item)))
 
+  if (imageUrl && imageUrl !== existingProduct.imageUrl) {
+    await deleteUploadedImage(existingProduct.imageUrl)
+  }
+
   return product
 }
 
@@ -205,6 +229,7 @@ export async function deleteProduct(id: string) {
   }
 
   const products = await getProducts()
+  const productToDelete = products.find((product) => product.id === id)
   const nextProducts = products.filter((product) => product.id !== id)
 
   if (nextProducts.length === products.length) {
@@ -212,4 +237,5 @@ export async function deleteProduct(id: string) {
   }
 
   await writeProducts(nextProducts.filter((item) => !item.isDemo))
+  await deleteUploadedImage(productToDelete?.imageUrl)
 }
