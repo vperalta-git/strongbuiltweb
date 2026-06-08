@@ -3,7 +3,4 @@ node_modules/
 tsconfig.tsbuildinfo
 next-*-dev.log
 next-*-dev.err.log
-data/
 public/uploads/products/
-package-lock.json
-public/
