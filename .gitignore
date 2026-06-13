@@ -4,3 +4,4 @@ tsconfig.tsbuildinfo
 next-*-dev.log
 next-*-dev.err.log
 public/uploads/products/
+.env*.local

@@ -57,6 +57,17 @@ const adminNavItems = [
 ] as const
 
 type AdminSection = (typeof adminNavItems)[number]["label"]
+type ContactInquiry = {
+  id: string
+  name: string
+  company?: string
+  email: string
+  phone?: string
+  message: string
+  inquiryContext?: string
+  status: "new"
+  createdAt: string
+}
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -69,6 +80,8 @@ export default function AdminPage() {
   const [previewUrl, setPreviewUrl] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [productSearchQuery, setProductSearchQuery] = useState("")
+  const [inquiries, setInquiries] = useState<ContactInquiry[]>([])
+  const [isLoadingInquiries, setIsLoadingInquiries] = useState(false)
   const [formResetKey, setFormResetKey] = useState(0)
   const [activeAdminSection, setActiveAdminSection] = useState<AdminSection>("Products")
 
@@ -142,9 +155,36 @@ export default function AdminPage() {
     }
   }
 
+  async function loadInquiries() {
+    setIsLoadingInquiries(true)
+
+    try {
+      const response = await fetch("/api/admin/inquiries", { cache: "no-store" })
+
+      if (response.status === 401) {
+        setIsAuthenticated(false)
+        setInquiries([])
+        return
+      }
+
+      if (response.ok) {
+        const data = (await response.json()) as { inquiries?: ContactInquiry[] }
+        setInquiries(data.inquiries ?? [])
+      }
+    } finally {
+      setIsLoadingInquiries(false)
+    }
+  }
+
   useEffect(() => {
     loadAdminProducts().finally(() => setIsCheckingSession(false))
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated && activeAdminSection === "Orders / Quotes") {
+      loadInquiries()
+    }
+  }, [activeAdminSection, isAuthenticated])
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -169,12 +209,14 @@ export default function AdminPage() {
     setIsAuthenticated(true)
     setMessage("Welcome back. You can add products now.")
     await loadAdminProducts()
+    await loadInquiries()
   }
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" })
     setIsAuthenticated(false)
     setProducts([])
+    setInquiries([])
     setEditingProduct(null)
     setMessage("")
   }
@@ -834,7 +876,7 @@ export default function AdminPage() {
                             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                               {[
                                 { label: "Total Products", value: products.length, note: "Live catalog records", icon: PackagePlus },
-                                { label: "Admin Added", value: adminProductCount, note: "Stored in project data", icon: Boxes },
+                                { label: "Admin Added", value: adminProductCount, note: "Stored in MongoDB", icon: Boxes },
                                 { label: "With Images", value: productsWithImages, note: "Product visuals available", icon: ImagePlus },
                                 { label: "Categories", value: categorySummaries.filter((category) => category.count > 0).length, note: "Currently populated", icon: FolderOpen },
                               ].map((item) => (
@@ -913,15 +955,63 @@ export default function AdminPage() {
 
                         {activeAdminSection === "Orders / Quotes" && (
                           <Card className="border-[#d6dee8] bg-white shadow-sm">
-                            <CardContent className="flex min-h-80 flex-col items-center justify-center p-8 text-center">
-                              <ClipboardList className="h-12 w-12 text-primary" />
-                              <h2 className="mt-4 text-xl font-extrabold text-[#0f2435]">Quote workflow ready</h2>
-                              <p className="mt-2 max-w-md text-sm leading-6 text-[#53677a]">
-                                Quote requests still route through the public catalog and contact flow. A dedicated quote inbox can plug into this section next.
-                              </p>
-                              <Button className="mt-6 bg-primary text-white hover:bg-[#d95400]" asChild>
-                                <Link href="/products">Open Product Catalog</Link>
+                            <CardHeader className="flex flex-col gap-3 border-b border-[#e8eef4] sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <CardTitle className="text-lg text-[#0b2038]">Inquiry Inbox</CardTitle>
+                                <p className="mt-1 text-sm text-[#53677a]">Latest contact and quote requests saved from the website.</p>
+                              </div>
+                              <Button type="button" variant="outline" onClick={loadInquiries} disabled={isLoadingInquiries}>
+                                <RefreshCw className="h-4 w-4" />
+                                {isLoadingInquiries ? "Refreshing..." : "Refresh"}
                               </Button>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                              {isLoadingInquiries ? (
+                                <p className="p-5 text-sm text-[#53677a]">Loading inquiries...</p>
+                              ) : inquiries.length ? (
+                                <div className="divide-y divide-[#e8eef4]">
+                                  {inquiries.map((inquiry) => (
+                                    <article key={inquiry.id} className="grid gap-4 p-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+                                      <div>
+                                        <div className="flex items-center gap-2">
+                                          <Badge className="bg-orange-50 text-primary hover:bg-orange-50">New</Badge>
+                                          <span className="text-xs font-semibold text-[#53677a]">
+                                            {new Date(inquiry.createdAt).toLocaleString()}
+                                          </span>
+                                        </div>
+                                        <h2 className="mt-3 text-lg font-extrabold text-[#0f2435]">{inquiry.name}</h2>
+                                        {inquiry.company && <p className="mt-1 text-sm font-semibold text-[#53677a]">{inquiry.company}</p>}
+                                        <div className="mt-3 space-y-1 text-sm text-[#33485f]">
+                                          <a className="block font-medium hover:text-primary" href={`mailto:${inquiry.email}`}>
+                                            {inquiry.email}
+                                          </a>
+                                          {inquiry.phone && (
+                                            <a className="block font-medium hover:text-primary" href={`tel:${inquiry.phone}`}>
+                                              {inquiry.phone}
+                                            </a>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="min-w-0">
+                                        {inquiry.inquiryContext && (
+                                          <p className="mb-3 rounded-md bg-[#eef3f7] px-3 py-2 text-sm font-bold text-[#0f2435]">
+                                            {inquiry.inquiryContext}
+                                          </p>
+                                        )}
+                                        <p className="whitespace-pre-wrap text-sm leading-6 text-[#33485f]">{inquiry.message}</p>
+                                      </div>
+                                    </article>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="flex min-h-72 flex-col items-center justify-center p-8 text-center">
+                                  <ClipboardList className="h-12 w-12 text-primary" />
+                                  <h2 className="mt-4 text-xl font-extrabold text-[#0f2435]">No inquiries yet</h2>
+                                  <p className="mt-2 max-w-md text-sm leading-6 text-[#53677a]">
+                                    Contact and quote requests submitted from the website will appear here.
+                                  </p>
+                                </div>
+                              )}
                             </CardContent>
                           </Card>
                         )}
@@ -958,7 +1048,7 @@ export default function AdminPage() {
                             </CardHeader>
                             <CardContent className="grid gap-4 p-5 md:grid-cols-2">
                               {[
-                                ["Storage", "Products are saved in the project data store and served to the public catalog API."],
+                                ["Storage", "Products are saved in MongoDB and served to the public catalog API."],
                                 ["Image Uploads", "JPG, PNG, WEBP, and GIF product images up to 5MB are supported."],
                                 ["Session", "Admin sessions use the existing signed cookie authentication flow."],
                                 ["Publishing", "Saved products are available immediately on the public Products page."],

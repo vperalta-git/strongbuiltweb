@@ -110,12 +110,26 @@ export function Contact() {
     setStatusMessage("")
 
     try {
+      const saveResponse = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          inquiryContext,
+        }),
+      })
+      const saveResult = (await saveResponse.json()) as { message?: string }
+
+      if (!saveResponse.ok) {
+        throw new Error(saveResult.message ?? "Unable to save your inquiry right now.")
+      }
+
       const result = await sendContactMessage(formData)
       const savedLocally = typeof result === "object" && result !== null && "local" in result
 
       setStatusMessage(
         savedLocally
-          ? "Demo inquiry saved locally. Add EmailJS keys later to send real emails."
+          ? "Your inquiry was saved. Email notifications are not configured yet."
           : "Your message was sent successfully. We will get back to you within 24 hours.",
       )
       setFormData({

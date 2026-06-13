@@ -1,18 +1,20 @@
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises"
+import { mkdir, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 import { getBrandByName } from "@/lib/brand-data"
+import { getMongoDb } from "@/lib/mongodb"
 import { demoProducts, productCategories, type CatalogProduct, type ProductCategoryName } from "@/lib/product-data"
 
-const DATA_DIR = path.join(process.cwd(), "data")
-const PRODUCTS_FILE = path.join(DATA_DIR, "products.json")
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "products")
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const PRODUCTS_COLLECTION = "products"
 const allowedImageTypes = new Map([
   ["image/jpeg", "jpg"],
   ["image/png", "png"],
   ["image/webp", "webp"],
   ["image/gif", "gif"],
 ])
+
+type StoredProduct = Omit<CatalogProduct, "isDemo">
 
 function isValidCategory(category: string): category is ProductCategoryName {
   return productCategories.some((item) => item.name === category)
@@ -30,7 +32,11 @@ function isValidBrand(brand: string) {
   return Boolean(getBrandByName(brand))
 }
 
-function normalizeProduct(product: Partial<CatalogProduct>): CatalogProduct | null {
+function normalizeProduct(product: Partial<CatalogProduct> | null): CatalogProduct | null {
+  if (!product) {
+    return null
+  }
+
   const legacyProduct = product as Partial<CatalogProduct> & {
     image?: string
     images?: string[]
@@ -62,41 +68,32 @@ function normalizeProduct(product: Partial<CatalogProduct>): CatalogProduct | nu
   }
 }
 
-async function ensureDataFile() {
-  await mkdir(DATA_DIR, { recursive: true })
+async function productsCollection() {
+  const db = await getMongoDb()
+  const collection = db.collection<StoredProduct>(PRODUCTS_COLLECTION)
 
-  try {
-    await readFile(PRODUCTS_FILE, "utf8")
-  } catch {
-    await writeFile(PRODUCTS_FILE, "[]", "utf8")
-  }
+  await collection.createIndex({ id: 1 }, { unique: true })
+  await collection.createIndex({ createdAt: -1 })
+
+  return collection
 }
 
 export async function getProducts() {
-  await ensureDataFile()
-
   try {
-    const raw = await readFile(PRODUCTS_FILE, "utf8")
-    const parsed = JSON.parse(raw) as unknown
-
-    if (!Array.isArray(parsed)) {
-      return []
-    }
-
-    const storedProducts = parsed
+    const collection = await productsCollection()
+    const storedProducts = (await collection.find({}).sort({ createdAt: -1 }).toArray())
       .map((item) => normalizeProduct(item as Partial<CatalogProduct>))
       .filter((item): item is CatalogProduct => Boolean(item))
     const storedIds = new Set(storedProducts.map((product) => product.id))
 
     return [...storedProducts, ...demoProducts.filter((product) => !storedIds.has(product.id))]
-  } catch {
-    return demoProducts
-  }
-}
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("MONGODB_URI")) {
+      return demoProducts
+    }
 
-async function writeProducts(products: CatalogProduct[]) {
-  await ensureDataFile()
-  await writeFile(PRODUCTS_FILE, `${JSON.stringify(products, null, 2)}\n`, "utf8")
+    throw error
+  }
 }
 
 function readProductPayload(formData: FormData) {
@@ -177,9 +174,9 @@ export async function addProduct(formData: FormData) {
     imageUrl,
     createdAt: new Date().toISOString(),
   }
-  const products = await getProducts()
+  const collection = await productsCollection()
 
-  await writeProducts([product, ...products.filter((item) => !item.isDemo)])
+  await collection.insertOne(product)
 
   return product
 }
@@ -195,8 +192,8 @@ export async function updateProduct(id: string, formData: FormData) {
 
   const payload = readProductPayload(formData)
   const image = formData.get("image")
-  const products = await getProducts()
-  const existingProduct = products.find((product) => product.id === id)
+  const collection = await productsCollection()
+  const existingProduct = normalizeProduct((await collection.findOne({ id })) as Partial<CatalogProduct> | null)
 
   if (!existingProduct) {
     throw new Error("Product not found.")
@@ -210,7 +207,7 @@ export async function updateProduct(id: string, formData: FormData) {
     updatedAt: new Date().toISOString(),
   }
 
-  await writeProducts(products.filter((item) => !item.isDemo).map((item) => (item.id === id ? product : item)))
+  await collection.updateOne({ id }, { $set: product })
 
   if (imageUrl && imageUrl !== existingProduct.imageUrl) {
     await deleteUploadedImage(existingProduct.imageUrl)
@@ -228,14 +225,13 @@ export async function deleteProduct(id: string) {
     throw new Error("Demo products cannot be deleted.")
   }
 
-  const products = await getProducts()
-  const productToDelete = products.find((product) => product.id === id)
-  const nextProducts = products.filter((product) => product.id !== id)
+  const collection = await productsCollection()
+  const productToDelete = normalizeProduct((await collection.findOne({ id })) as Partial<CatalogProduct> | null)
 
-  if (nextProducts.length === products.length) {
+  if (!productToDelete) {
     throw new Error("Product not found.")
   }
 
-  await writeProducts(nextProducts.filter((item) => !item.isDemo))
-  await deleteUploadedImage(productToDelete?.imageUrl)
+  await collection.deleteOne({ id })
+  await deleteUploadedImage(productToDelete.imageUrl)
 }
