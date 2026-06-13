@@ -43,13 +43,18 @@ async function main() {
     const collection = db.collection("products")
 
     await collection.createIndex({ id: 1 }, { unique: true })
+    await collection.createIndex({ site: 1 })
     await collection.createIndex({ createdAt: -1 })
 
     let upserted = 0
     let modified = 0
 
     for (const product of products) {
-      const result = await collection.updateOne({ id: product.id }, { $set: product }, { upsert: true })
+      const result = await collection.updateOne(
+        { id: product.id },
+        { $set: { site: "tracmac", ...product } },
+        { upsert: true },
+      )
 
       upserted += result.upsertedCount
       modified += result.modifiedCount

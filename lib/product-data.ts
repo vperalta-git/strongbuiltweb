@@ -13,6 +13,8 @@ export type ProductCategoryName =
   | "ESD"
   | "W/ DOLE Certificate"
 
+export type ProductSiteSlug = "tracmac" | "strongbuilt"
+
 export type ProductCategory = {
   name: ProductCategoryName
   description: string
@@ -22,6 +24,7 @@ export type CatalogProduct = {
   id: string
   name: string
   category: ProductCategoryName
+  site: ProductSiteSlug
   brand: string
   description: string
   spec: string
@@ -92,6 +95,7 @@ export const demoProducts: CatalogProduct[] = [
     id: "demo-hard-hat",
     name: "Industrial Vented Safety Helmet",
     category: "Head Protection",
+    site: "tracmac",
     brand: "MSA Safety",
     description: "Lightweight helmet for construction, warehouse, and field operations.",
     spec: "ANSI Z89.1 Type I, adjustable ratchet suspension",
@@ -103,6 +107,7 @@ export const demoProducts: CatalogProduct[] = [
     id: "demo-respirator",
     name: "Reusable Half-Face Respirator",
     category: "Respiratory Protection",
+    site: "tracmac",
     brand: "3M",
     description: "Reusable respirator for dust, fumes, and particulate-heavy work areas.",
     spec: "Compatible with P100 cartridge filters",
@@ -114,6 +119,7 @@ export const demoProducts: CatalogProduct[] = [
     id: "demo-gloves",
     name: "Cut-Resistant Work Gloves",
     category: "Hand Protection",
+    site: "tracmac",
     brand: "Ansell",
     description: "Grip-focused gloves for handling sheet metal, glass, and sharp components.",
     spec: "EN 388 cut protection, breathable knit shell",
@@ -125,6 +131,7 @@ export const demoProducts: CatalogProduct[] = [
     id: "demo-vest",
     name: "High-Visibility Reflective Vest",
     category: "Workwear",
+    site: "tracmac",
     brand: "Portwest",
     description: "Bright reflective vest for traffic control, logistics, and site visibility.",
     spec: "Reflective tape, breathable mesh, multiple pockets",

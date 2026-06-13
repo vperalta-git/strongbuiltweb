@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { type ProductCategoryName } from "@/lib/product-data"
+import { siteConfigs, siteHref, type SiteConfig } from "@/lib/site-config"
 import footProtectionImage from "@/assets/homedesign/category-foot-protection.png"
 import headProtectionImage from "@/assets/homedesign/category-head-protection.png"
 import fallProtectionImage from "@/assets/homedesign/category-fall-protection.png"
@@ -81,7 +82,11 @@ const featuredCategories: FeaturedCategory[] = [
   },
 ]
 
-export function ProductShowcase() {
+type ProductShowcaseProps = {
+  site?: SiteConfig
+}
+
+export function ProductShowcase({ site = siteConfigs.tracmac }: ProductShowcaseProps) {
   return (
     <section className="relative overflow-hidden bg-[#fbfaf7] py-18 lg:py-24">
       <div
@@ -106,7 +111,7 @@ export function ProductShowcase() {
             </p>
           </div>
           <Button size="lg" className="h-12 px-7 shadow-lg shadow-orange-950/15" asChild>
-            <Link href="/products">
+            <Link href={siteHref(site, "/products")}>
               Browse Full Catalog
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -117,7 +122,7 @@ export function ProductShowcase() {
           {featuredCategories.map((category) => (
             <Link
               key={category.name}
-              href={`/products?category=${encodeURIComponent(category.name)}`}
+              href={siteHref(site, `/products?category=${encodeURIComponent(category.name)}`)}
               className="group relative flex min-h-[390px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/8 transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-slate-900/14"
             >
               <div className="absolute inset-x-0 top-0 z-20 mx-auto h-1 w-[42%] rounded-b-full bg-primary transition-all duration-300 group-hover:w-1/2 group-hover:h-1.5" />

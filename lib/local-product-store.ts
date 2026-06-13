@@ -1,4 +1,9 @@
-import { productCategories, type CatalogProduct, type ProductCategoryName } from "@/lib/product-data"
+import {
+  productCategories,
+  type CatalogProduct,
+  type ProductCategoryName,
+  type ProductSiteSlug,
+} from "@/lib/product-data"
 
 const PRODUCTS_STORAGE_KEY = "tracmac.catalog.products.v1"
 const MAX_IMAGE_BYTES = 750 * 1024
@@ -48,6 +53,10 @@ function isValidCategory(category: string): category is ProductCategoryName {
   return productCategories.some((item) => item.name === category)
 }
 
+function isValidSite(site: string): site is ProductSiteSlug {
+  return site === "tracmac" || site === "strongbuilt"
+}
+
 function readTextValue(formData: FormData, key: string) {
   const value = formData.get(key)
 
@@ -57,6 +66,7 @@ function readTextValue(formData: FormData, key: string) {
 function readProductPayload(formData: FormData) {
   const name = readTextValue(formData, "name")
   const category = readTextValue(formData, "category")
+  const site = readTextValue(formData, "site") || "tracmac"
   const brand = readTextValue(formData, "brand")
   const description = readTextValue(formData, "description")
   const spec = readTextValue(formData, "spec")
@@ -70,9 +80,14 @@ function readProductPayload(formData: FormData) {
     throw new Error("Please choose a valid product category.")
   }
 
+  if (!isValidSite(site)) {
+    throw new Error("Please choose Tracmac or Strongbuilt for this product.")
+  }
+
   return {
     name,
     category,
+    site,
     brand,
     description,
     spec,

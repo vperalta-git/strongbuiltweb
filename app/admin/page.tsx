@@ -46,6 +46,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { productBrands } from "@/lib/brand-data"
 import { productCategories } from "@/lib/product-data"
 import type { CatalogProduct } from "@/lib/product-data"
+import { siteConfigs } from "@/lib/site-config"
 
 const adminNavItems = [
   { label: "Dashboard", icon: Home },
@@ -56,6 +57,8 @@ const adminNavItems = [
   { label: "Users", icon: UsersRound },
   { label: "Settings", icon: Settings2 },
 ] as const
+
+const catalogSites = [siteConfigs.tracmac, siteConfigs.strongbuilt]
 
 type AdminSection = (typeof adminNavItems)[number]["label"]
 type ContactInquiry = {
@@ -124,7 +127,7 @@ export default function AdminPage() {
       return true
     }
 
-    return [product.name, product.brand, product.category, product.description, product.spec, product.badge]
+    return [product.name, product.brand, product.category, product.site, product.description, product.spec, product.badge]
       .filter(Boolean)
       .some((value) => value?.toLowerCase().includes(query))
   })
@@ -134,6 +137,10 @@ export default function AdminPage() {
   const categorySummaries = productCategories.map((category) => ({
     ...category,
     count: products.filter((product) => product.category === category.name).length,
+  }))
+  const siteSummaries = catalogSites.map((site) => ({
+    ...site,
+    count: products.filter((product) => product.site === site.slug).length,
   }))
   const brandSummaries = productBrands.map((brand) => ({
     ...brand,
@@ -146,8 +153,8 @@ export default function AdminPage() {
       description: "Monitor catalog coverage, product counts, and current admin storage status.",
     },
     Products: {
-      title: "Manage the TRACMAC product catalog",
-      description: "Add product names, images, descriptions, categories, and key specifications directly to the live catalog.",
+      title: "Manage the shared product catalog",
+      description: "Add product names, images, descriptions, categories, and assign each record to Tracmac or Strongbuilt.",
     },
     Categories: {
       title: "Manage product categories",
@@ -415,12 +422,12 @@ export default function AdminPage() {
                       Admin
                     </Badge>
                     <h1 className="mt-7 text-4xl font-extrabold leading-tight tracking-normal text-balance sm:text-5xl lg:text-6xl">
-                      Manage the <span className="text-primary">TRACMAC</span> product catalog
+                      Manage the <span className="text-primary">shared</span> product catalog
                     </h1>
                     <div className="mt-6 h-0.5 w-16 rounded-full bg-primary" />
                     <p className="mt-7 max-w-lg text-base leading-8 text-white/76 sm:text-lg">
-                      Add product names, images, descriptions, categories, and key specifications directly to the live
-                      catalog.
+                      Add product names, images, descriptions, categories, and assign each item to Tracmac or
+                      Strongbuilt.
                     </p>
 
                     <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -637,9 +644,9 @@ export default function AdminPage() {
                     <Alert className="mt-6 flex items-start gap-4 border-orange-200 bg-orange-50/85 text-[#0f2435] shadow-sm">
                       <HardDrive className="mt-0.5 h-5 w-5 text-primary" />
                       <div className="min-w-0 flex-1">
-                        <AlertTitle className="font-extrabold">Local storage is in use</AlertTitle>
+                        <AlertTitle className="font-extrabold">Shared MongoDB catalog is in use</AlertTitle>
                         <AlertDescription className="text-sm text-[#53677a]">
-                          Products are stored on this device in local storage. Changes will only be visible on this device and not synced across other devices.
+                          Tracmac and Strongbuilt use the same products collection. The Website field controls which catalog shows each product.
                         </AlertDescription>
                       </div>
                       <Button type="button" variant="outline" size="sm" className="hidden border-[#d6dee8] bg-white text-[#0f2435] sm:inline-flex">
@@ -706,7 +713,7 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="grid gap-5 md:grid-cols-2">
+                      <div className="grid gap-5 md:grid-cols-3">
                         <div className="space-y-2">
                           <Label htmlFor="category" className="text-xs font-extrabold text-[#0f2435]">
                             Category <span className="text-primary">*</span>
@@ -721,6 +728,24 @@ export default function AdminPage() {
                             {productCategories.map((category) => (
                               <option key={category.name} value={category.name}>
                                 {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="site" className="text-xs font-extrabold text-[#0f2435]">
+                            Website <span className="text-primary">*</span>
+                          </Label>
+                          <select
+                            id="site"
+                            name="site"
+                            defaultValue={editingProduct?.site ?? siteConfigs.tracmac.slug}
+                            className="h-10 w-full rounded-md border border-[#d6dee8] bg-white px-3 text-sm text-[#0f2435] shadow-xs outline-none transition focus:border-primary focus:ring-[3px] focus:ring-primary/20"
+                            required
+                          >
+                            {catalogSites.map((site) => (
+                              <option key={site.slug} value={site.slug}>
+                                {site.shortName}
                               </option>
                             ))}
                           </select>
@@ -944,6 +969,9 @@ export default function AdminPage() {
                               </p>
                               <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#33485f]">{product.description}</p>
                               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-[#53677a]">
+                                <span className="rounded bg-orange-50 px-2 py-0.5 font-bold text-primary">
+                                  {catalogSites.find((site) => site.slug === product.site)?.shortName ?? "TRACMAC"}
+                                </span>
                                 <span>{product.category}</span>
                                 {product.badge && <span className="rounded bg-[#eef3f7] px-2 py-0.5">{product.badge}</span>}
                                 {product.isDemo && <span>Demo item</span>}
@@ -995,6 +1023,8 @@ export default function AdminPage() {
                               {[
                                 { label: "Total Products", value: products.length, note: "Live catalog records", icon: PackagePlus },
                                 { label: "Admin Added", value: adminProductCount, note: "Stored in MongoDB", icon: Boxes },
+                                { label: "Tracmac", value: siteSummaries.find((site) => site.slug === "tracmac")?.count ?? 0, note: "Assigned products", icon: ShieldCheck },
+                                { label: "Strongbuilt", value: siteSummaries.find((site) => site.slug === "strongbuilt")?.count ?? 0, note: "Assigned products", icon: HardDrive },
                                 { label: "With Images", value: productsWithImages, note: "Product visuals available", icon: ImagePlus },
                                 { label: "Categories", value: categorySummaries.filter((category) => category.count > 0).length, note: "Currently populated", icon: FolderOpen },
                               ].map((item) => (

@@ -6,9 +6,9 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ChevronDown, Menu, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import tmacLogo from "@/assets/tmaclogo.png"
 import { cn } from "@/lib/utils"
 import { QuoteLink } from "@/components/quote-link"
+import { getSiteConfigForPath, siteHref } from "@/lib/site-config"
 
 const navLinks = [
   { href: "/#home", label: "Home" },
@@ -20,8 +20,10 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname()
+  const site = getSiteConfigForPath(pathname)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [activeHash, setActiveHash] = useState("")
+  const links = navLinks.map((link) => ({ ...link, href: siteHref(site, link.href) }))
 
   useEffect(() => {
     const updateHash = () => setActiveHash(window.location.hash)
@@ -34,17 +36,19 @@ export function Header() {
 
   function isActiveLink(href: string) {
     const [linkPath, linkHash] = href.split("#")
+    const currentPath = pathname === site.basePath ? "/" : pathname.replace(site.basePath, "") || "/"
+    const normalizedLinkPath = linkPath === site.basePath ? "/" : linkPath.replace(site.basePath, "") || "/"
 
-    if (pathname === "/products") {
-      return href === "/products"
+    if (currentPath === "/products") {
+      return normalizedLinkPath === "/products"
     }
 
-    if (pathname !== (linkPath || "/")) {
+    if (currentPath !== (normalizedLinkPath || "/")) {
       return false
     }
 
     if (!linkHash) {
-      return pathname === href
+      return currentPath === normalizedLinkPath
     }
 
     return activeHash ? activeHash === `#${linkHash}` : linkHash === "home"
@@ -54,17 +58,21 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#071d34]/95 text-white shadow-sm shadow-black/10 backdrop-blur-xl">
       <div className="mx-auto max-w-[1520px] px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-20 items-center justify-between py-2">
-          <Link href="/" className="flex items-center">
-            <Image
-              src={tmacLogo}
-              alt="TRACMAC Marketing logo"
-              className="h-16 w-auto object-contain lg:h-18"
-              priority
-            />
+          <Link href={siteHref(site, "/")} className="flex items-center">
+            {site.logo ? (
+              <Image
+                src={site.logo}
+                alt={site.logoAlt}
+                className="h-16 w-auto object-contain lg:h-18"
+                priority
+              />
+            ) : (
+              <span className="text-2xl font-extrabold uppercase tracking-[0.12em] text-white">{site.shortName}</span>
+            )}
           </Link>
 
           <nav className="hidden h-20 items-center gap-10 lg:flex">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -89,7 +97,7 @@ export function Header() {
               className="h-11 border-white/35 bg-transparent px-5 text-white hover:bg-white/10 hover:text-white"
               asChild
             >
-              <Link href="/products">
+              <Link href={siteHref(site, "/products")}>
                 <Search className="h-4 w-4" />
                 Browse Products
               </Link>
@@ -114,7 +122,7 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="border-t border-white/10 py-4 lg:hidden">
             <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => (
+              {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -130,7 +138,7 @@ export function Header() {
               ))}
               <div className="mt-2 flex flex-col gap-2 border-t border-white/10 pt-4">
                 <Button variant="outline" size="sm" className="border-white/35 bg-transparent text-white hover:bg-white/10 hover:text-white" asChild>
-                  <Link href="/products">
+                  <Link href={siteHref(site, "/products")}>
                     <Search className="h-4 w-4" />
                     Browse Products
                   </Link>

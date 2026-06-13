@@ -1,7 +1,10 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { Mail, MapPin, Phone } from "lucide-react"
-import tmacLogo from "@/assets/tmaclogo.png"
+import { getSiteConfigForPath, siteHref } from "@/lib/site-config"
 
 const footerLinks = {
   products: [
@@ -36,6 +39,8 @@ const contactLinks = [
 ]
 
 export function Footer() {
+  const site = getSiteConfigForPath(usePathname())
+
   return (
     <footer className="bg-[#243140] text-white">
       <div className="section-shell">
@@ -43,11 +48,17 @@ export function Footer() {
           <div className="lg:col-span-2">
             <div className="mb-6">
               <div className="inline-flex px-0 py-0">
-                <Image
-                  src={tmacLogo}
-                  alt="TRACMAC Marketing logo"
-                  className="h-16 w-auto object-contain lg:h-18"
-                />
+                {site.logo ? (
+                  <Image
+                    src={site.logo}
+                    alt={site.logoAlt}
+                    className="h-16 w-auto object-contain lg:h-18"
+                  />
+                ) : (
+                  <span className="text-2xl font-extrabold uppercase tracking-[0.12em] text-white">
+                    {site.shortName}
+                  </span>
+                )}
               </div>
             </div>
             <p className="max-w-sm text-sm leading-7 text-white/62">
@@ -59,7 +70,7 @@ export function Footer() {
                   key={item.label}
                   href={item.href}
                   className="flex h-10 w-10 items-center justify-center rounded-md bg-white/10 transition-colors hover:bg-primary hover:text-primary-foreground"
-                  aria-label={item.label}
+                  aria-label={item.label.replace("TRACMAC", site.contactLabel)}
                 >
                   <item.icon className="h-5 w-5" />
                 </Link>
@@ -72,7 +83,7 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.products.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-white/62 transition-colors hover:text-primary">
+                  <Link href={siteHref(site, link.href)} className="text-sm text-white/62 transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -85,7 +96,7 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.industries.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-white/62 transition-colors hover:text-primary">
+                  <Link href={siteHref(site, link.href)} className="text-sm text-white/62 transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -98,7 +109,7 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-white/62 transition-colors hover:text-primary">
+                  <Link href={siteHref(site, link.href)} className="text-sm text-white/62 transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>
@@ -109,7 +120,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-6 sm:flex-row">
           <p className="text-sm text-white/50">
-            &copy; {new Date().getFullYear()} TRACMAC Marketing. All rights reserved.
+            &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-white/50">
             <Link href="/admin" className="transition-colors hover:text-white">

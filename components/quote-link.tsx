@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { type ComponentProps, type MouseEvent, type ReactNode } from "react"
 import { QUOTE_CONTEXT_EVENT, QUOTE_CONTEXT_STORAGE_KEY, type QuoteContext } from "@/lib/quote-context"
+import { getSiteConfigForPath, siteHref } from "@/lib/site-config"
 
 type QuoteLinkProps = Omit<ComponentProps<typeof Link>, "href"> & {
   context?: QuoteContext
@@ -18,6 +19,8 @@ export function QuoteLink({
 }: QuoteLinkProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const site = getSiteConfigForPath(pathname)
+  const contactHref = siteHref(site, "/#contact")
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     onClick?.(event)
@@ -29,7 +32,7 @@ export function QuoteLink({
     window.localStorage.setItem(QUOTE_CONTEXT_STORAGE_KEY, JSON.stringify(context))
     window.dispatchEvent(new CustomEvent(QUOTE_CONTEXT_EVENT, { detail: context }))
 
-    if (pathname === "/") {
+    if (pathname === (site.basePath || "/")) {
       event.preventDefault()
       document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" })
       window.history.replaceState(null, "", "#contact")
@@ -37,11 +40,11 @@ export function QuoteLink({
     }
 
     event.preventDefault()
-    router.push("/#contact")
+    router.push(contactHref)
   }
 
   return (
-    <Link href="/#contact" onClick={handleClick} {...props}>
+    <Link href={contactHref} onClick={handleClick} {...props}>
       {children}
     </Link>
   )

@@ -1,5 +1,6 @@
 import Image, { type StaticImageData } from "next/image"
 import { Award, Cog, DollarSign, Handshake, Headphones, Package, type LucideIcon } from "lucide-react"
+import { siteConfigs, type SiteConfig } from "@/lib/site-config"
 import qualityPpeImage from "@/assets/homedesign/quality_ppe_products_image.png"
 import trustedSupplyImage from "@/assets/homedesign/trusted_supply_partner_image.png"
 import industryReadyImage from "@/assets/homedesign/industry_ready_solutions_image.png"
@@ -53,7 +54,11 @@ const features: Feature[] = [
   },
 ]
 
-export function WhyChooseUs() {
+type WhyChooseUsProps = {
+  site?: SiteConfig
+}
+
+export function WhyChooseUs({ site = siteConfigs.tracmac }: WhyChooseUsProps) {
   return (
     <section className="relative overflow-hidden bg-[#fbfaf7] py-18 lg:py-24">
       <div
@@ -80,8 +85,7 @@ export function WhyChooseUs() {
           </h2>
           <div className="mx-auto mt-5 h-1 w-16 rounded-full bg-primary" />
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-600 text-pretty">
-            TRACMAC Marketing combines product quality, industry expertise, and exceptional service to deliver safety
-            solutions that protect your workforce.
+            {site.whyDescription}
           </p>
         </div>
 

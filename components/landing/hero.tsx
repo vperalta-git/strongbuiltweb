@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { QuoteLink } from "@/components/quote-link"
 import industrialHero from "@/assets/hero/industrial-worksite-hero.png"
+import { siteConfigs, siteHref, type SiteConfig } from "@/lib/site-config"
 
 const benefits = [
   { icon: Bolt, title: "Fast Quotes", text: "Quick turnaround" },
@@ -20,7 +21,11 @@ const benefits = [
   { icon: ShieldCheck, title: "Compliance-Ready", text: "Certifications covered" },
 ]
 
-export function Hero() {
+type HeroProps = {
+  site?: SiteConfig
+}
+
+export function Hero({ site = siteConfigs.tracmac }: HeroProps) {
   return (
     <section id="home" className="relative overflow-hidden bg-[#07111d] text-white">
       <div
@@ -41,23 +46,21 @@ export function Hero() {
         <div className="max-w-3xl text-center lg:text-left">
           <div className="mx-auto mb-7 inline-flex items-center gap-3 rounded-full border border-white/25 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white/90 shadow-sm backdrop-blur lg:mx-0">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            PPE Supply for Industrial Teams
+            {site.heroEyebrow}
           </div>
 
           <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-white text-balance sm:text-6xl lg:text-7xl">
-            Industrial Safety{" "}
-            <span className="text-primary">Equipment</span> Built for Serious Worksites
+            {site.heroTitlePrefix} <span className="text-primary">{site.heroTitleAccent}</span>{" "}
+            {site.heroTitleSuffix}
           </h1>
           <div className="mx-auto mt-7 h-1 w-16 rounded-full bg-primary lg:mx-0" />
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-white/76 text-pretty sm:text-lg lg:mx-0">
-            TRACMAC Marketing delivers premium personal protective equipment and safety solutions to construction,
-            mining, and industrial sectors. Protect your workforce with certified safety gear from a supplier who
-            understands your industry.
+            {site.heroDescription}
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
             <Button size="lg" className="h-12 px-8 shadow-xl shadow-orange-950/35" asChild>
-              <Link href="/products">
+              <Link href={siteHref(site, "/products")}>
                 View Products
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -106,7 +109,7 @@ export function Hero() {
             </div>
 
             <Link
-              href="/products"
+              href={siteHref(site, "/products")}
               className="group mt-5 flex items-center gap-5 rounded-lg bg-primary p-7 text-primary-foreground shadow-xl shadow-orange-950/30 transition hover:bg-primary/90"
             >
               <Factory className="h-12 w-12 shrink-0" />
@@ -120,7 +123,7 @@ export function Hero() {
             </Link>
 
             <Link
-              href="/#contact"
+              href={siteHref(site, "/#contact")}
               className="group mt-5 flex items-center gap-5 rounded-lg border border-white/18 bg-slate-950/24 p-6 transition hover:bg-white/10"
             >
               <Headphones className="h-10 w-10 shrink-0 text-primary" />

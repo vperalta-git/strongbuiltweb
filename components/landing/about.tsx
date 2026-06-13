@@ -1,6 +1,7 @@
 import Image from "next/image"
 import { CheckCircle2, Shield, Users } from "lucide-react"
 import aboutImage from "@/assets/homedesign/about-tracmac-workforce-image.png"
+import { siteConfigs, type SiteConfig } from "@/lib/site-config"
 
 const highlights = [
   "Certified safety equipment meeting international standards",
@@ -26,7 +27,11 @@ const statCards = [
   },
 ]
 
-export function About() {
+type AboutProps = {
+  site?: SiteConfig
+}
+
+export function About({ site = siteConfigs.tracmac }: AboutProps) {
   return (
     <section id="about" className="relative overflow-hidden bg-[#fbfaf7] py-18 lg:py-24">
       <div
@@ -82,21 +87,15 @@ export function About() {
           </div>
 
           <div>
-            <span className="text-sm font-extrabold uppercase tracking-[0.24em] text-primary">About TRACMAC</span>
+            <span className="text-sm font-extrabold uppercase tracking-[0.24em] text-primary">{site.aboutEyebrow}</span>
             <h2 className="mt-4 max-w-2xl text-4xl font-extrabold leading-tight tracking-tight text-[#0b2038] text-balance sm:text-5xl lg:text-6xl">
-              Protecting workforces across industries
+              {site.aboutTitle}
             </h2>
             <div className="mt-6 h-0.5 w-16 rounded-full bg-primary" />
             <div className="mt-7 space-y-6 text-lg leading-8 text-slate-600">
-              <p>
-                TRACMAC Marketing has been a leading supplier of personal protective equipment since 2010. We specialize
-                in providing comprehensive safety solutions to the construction, mining, manufacturing, and industrial
-                sectors.
-              </p>
-              <p>
-                Our mission is to ensure every worker returns home safely. We partner with top manufacturers worldwide to
-                bring you certified, quality PPE that meets the demanding requirements of your industry.
-              </p>
+              {site.aboutDescription.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
             </div>
 
             <ul className="mt-9 grid gap-4">

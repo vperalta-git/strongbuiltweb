@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { usePathname } from "next/navigation"
 import {
   Anchor,
   BadgeCheck,
@@ -45,6 +46,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { productBrands } from "@/lib/brand-data"
 import { productCategories, type CatalogProduct, type ProductCategoryName } from "@/lib/product-data"
+import { getSiteConfigForPath } from "@/lib/site-config"
 
 const ALL_PRODUCTS = "All Products"
 const ALL_BRANDS = "All Brands"
@@ -147,6 +149,7 @@ const colorOptions = [
 ]
 
 export default function ProductsPage() {
+  const site = getSiteConfigForPath(usePathname())
   const [selectedCategory, setSelectedCategory] = useState(ALL_PRODUCTS)
   const [selectedBrand, setSelectedBrand] = useState(ALL_BRANDS)
   const [brandSearchQuery, setBrandSearchQuery] = useState("")
@@ -169,12 +172,12 @@ export default function ProductsPage() {
       setSelectedBrand(brand)
     }
 
-    fetch("/api/products", { cache: "no-store" })
+    fetch(`/api/products?site=${site.slug}`, { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error("Unable to load products."))))
       .then((data: { products?: CatalogProduct[] }) => setProducts(data.products ?? []))
       .catch(() => setProducts([]))
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [site.slug])
 
   useEffect(() => {
     setCurrentPage(1)
@@ -362,8 +365,8 @@ export default function ProductsPage() {
                       All Products
                     </h1>
                     <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-                      Browse our complete range of safety and protective equipment engineered for performance and built
-                      for protection.
+                      Browse the {site.shortName} catalog using the shared product database, organized by the right
+                      categories for this website.
                     </p>
                   </div>
                   <Button
